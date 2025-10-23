@@ -1,0 +1,73 @@
+<!--
+templates/library.min.tmpl — Minimal text‑first Library page, NODE‑inspired.
+Uses the minimal base (base.min.tmpl) you already have.
+
+Expected data passed from builder:
+  .Query   string
+  .Sagas   []SagaLike where each SagaLike has:
+           { Title, Slug, Summary, EpisodeCount int, LastRelease *time.Time, Status string,
+             Arcs []ArcLike }
+  ArcLike: { Title, Slug, Episodes []EpisodeRef }
+  EpisodeRef: { Title, Slug, Number int, Date time.Time, Summary string, ArcSlug string }
+  .NowYear int
+-->
+
+{{ define "library" }}
+{{ template "base" . }}
+{{ end }}
+
+{{ define "title" }}Library — Sagas / Arcs / Episodes{{ end }}
+{{ define "h1" }}Library — Sagas / Arcs / Episodes{{ end }}
+
+{{ define "content" }}
+<!-- Search (optional; wire query param) -->
+<form action="/library/" method="get" class="mb-4 flex gap-2 text-sm">
+    <input name="q" value="{{ .Query }}" placeholder="search title or tag"
+           class="flex-1 bg-zinc-900 text-zinc-100 placeholder:text-zinc-500 border border-zinc-800 rounded px-2 py-1 focus:outline-none focus:border-white/40" />
+    <button class="px-3 py-1 border border-zinc-800 rounded hover:border-white/40">Search</button>
+</form>
+
+<!-- Sagas → Arcs → Episodes (expandable with <details>) -->
+<section>
+    <h2 class="text-sm text-zinc-400 mb-2">INDEX</h2>
+    <ul class="space-y-3">
+        {{ range .Sagas }}
+        <li>
+            <div class="mb-1">
+                <a class="hover:underline" href="/sagas/{{ .Slug }}/">[Saga] {{ .Title }}</a>
+                <span class="text-zinc-500 text-xs">— {{ .EpisodeCount }} eps; {{ .Status }}{{ if .LastRelease }}; last {{ .LastRelease.Format "2006-01-02" }}{{ end }}</span>
+            </div>
+
+            {{ if .Arcs }}
+            <ul class="ml-4 space-y-2">
+                {{ range .Arcs }}
+                <li>
+                    <details class="group">
+                        <summary class="cursor-pointer list-none flex items-center gap-2">
+                            <a class="hover:underline" href="/sagas/{{ $.Slug }}/{{ .Slug }}/">[Arc] {{ .Title }}</a>
+                            <span class="text-zinc-500 text-xs">— {{ len .Episodes }} eps</span>
+                        </summary>
+                        <div class="mt-1 ml-4">
+                            {{ if .Episodes }}
+                            <ul class="space-y-1">
+                                {{ range .Episodes }}
+                                <li>
+                                    <a class="hover:underline" href="/sagas/{{ $.Slug }}/{{ .ArcSlug }}/{{ .Slug }}/">[Ep {{ printf "%02d" .Number }}] {{ .Title }}</a>
+                                    <span class="text-zinc-500 text-xs">— {{ .Date.Format "2006-01-02" }}</span>
+                                </li>
+                                {{ end }}
+                            </ul>
+                            {{ else }}
+                            <div class="text-xs text-zinc-500">(no episodes yet)</div>
+                            {{ end }}
+                        </div>
+                    </details>
+                </li>
+                {{ end }}
+            </ul>
+            {{ end }}
+        </li>
+        {{ end }}
+    </ul>
+</section>
+{{ end }}

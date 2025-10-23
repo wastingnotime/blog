@@ -1,0 +1,30 @@
+{{ define "arc" }}
+    {{ template "base" . }}
+{{ end }}
+
+{{ define "title" }}{{ .Arc.Title }} — {{ .Saga.Title }}{{ end }}
+{{ define "h1" }}[Arc] {{ .Arc.Title }} — {{ .Saga.Title }}{{ end }}
+
+{{ define "content" }}
+    {{ if .Arc.Summary }}<p class="text-sm text-zinc-400 mb-4">{{ .Arc.Summary }}</p>{{ end }}
+    <section>
+        <h2 class="text-sm text-zinc-400 mb-2">EPISODES</h2>
+        {{ if .Episodes }}
+            <ul class="space-y-1">
+                {{ range .Episodes }}
+                    <li>
+                        <a class="hover:underline" href="/sagas/{{ $.Saga.Slug }}/{{ $.Arc.Slug }}/{{ .Slug }}/">[Ep {{ printf "%02d" .Number }}] {{ .Title }}</a>
+                        <span class="text-zinc-500 text-xs">— {{ .Date.Format "2006-01-02" }}</span>
+                    </li>
+                {{ end }}
+            </ul>
+        {{ else }}
+            <div class="text-sm text-zinc-500">No episodes yet.</div>
+        {{ end }}
+    </section>
+
+    <nav class="mt-6 text-xs text-zinc-400 flex justify-between">
+        {{ if .PrevArc }}<a class="hover:underline" href="/sagas/{{ .Saga.Slug }}/{{ .PrevArc.Slug }}/">← {{ .PrevArc.Title }}</a>{{ else }}<span></span>{{ end }}
+        {{ if .NextArc }}<a class="hover:underline" href="/sagas/{{ .Saga.Slug }}/{{ .NextArc.Slug }}//">{{ .NextArc.Title }} →</a>{{ end }}
+    </nav>
+{{ end }}

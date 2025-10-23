@@ -1,0 +1,135 @@
+
+    
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title> — First Saga</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>tailwind.config={theme:{extend:{fontFamily:{mono:["ui-monospace","SFMono-Regular","Menlo","Monaco","Consolas","Liberation Mono","Courier New","monospace"]}}}};</script>
+    <style>html{font-kerning:normal}</style>
+</head>
+<body class="bg-black text-zinc-100 font-mono selection:bg-white/20">
+<div class="max-w-3xl mx-auto px-4 py-6">
+    
+    <header class="mb-6">
+        <nav class="text-sm text-zinc-400">
+            <a class="hover:text-white" href="/">HOME</a>
+            <span class="mx-2">/</span>
+            <a class="hover:text-white" href="/library/">LIBRARY</a>
+            <span class="mx-2">/</span>
+            <a class="hover:text-white" href="/sagas/">SAGAS</a>
+            <span class="mx-2">/</span>
+            <a class="hover:text-white" href="/feed.xml">RSS</a>
+        </nav>
+        <h1 class="mt-3 text-xl tracking-tight">[Ep %!d(&lt;nil&gt;)]  — First Arc / First Saga</h1>
+    </header>
+
+    
+    <div class="text-xs text-zinc-500 mb-3">
+         · <a class="hover:underline" href="/sagas/first-saga/first-arc/">back to arc</a>
+    </div>
+
+    <article class="prose prose-invert max-w-none">
+        <p>I have my application where it can render each blog post using a layout, but I need to get some additional information about each blog post to properly use the layout. To do this I am going to use frontmatter.</p>
+<p>Frontmatter is basically just a section at the start of a markdown file that will provide some metadata. It can often be provided in a variety fo formats including YAML, TOML, and JSON. I am going to use TOML simply because it is what my current blog uses, so it is what I am familiar with right now.</p>
+<p>The first thing I did was add some metadata to the top of each of my test blog posts. TOML frontmatter is typically indicated with the <code>+++</code> characters, and then the TOML is written much like a block of code inside the characters. Below is an example of this on the <code>how-to-boil-eggs.md</code> demo blog post I created.</p>
+<pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;"><code><span style="display:flex;"><span>+++
+</span></span><span style="display:flex;"><span>title = &#34;How to Boil Eggs&#34;
+</span></span><span style="display:flex;"><span>description = &#34;Learn how to quickly and easily boil 6 eggs!&#34;
+</span></span><span style="display:flex;"><span>date = 2024-03-03
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>[author]
+</span></span><span style="display:flex;"><span>name = &#34;Jon Calhoun&#34;
+</span></span><span style="display:flex;"><span>email = &#34;jon@calhoun.io&#34;
+</span></span><span style="display:flex;"><span>+++
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="font-weight:bold"># How to boil eggs
+</span></span></span><span style="display:flex;"><span><span style="font-weight:bold"></span>
+</span></span><span style="display:flex;"><span>Ingredients: 6 eggs
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>Step 1: Boil 4 cups of water.
+</span></span><span style="display:flex;"><span>Step 2: Add the eggs to the water and boil for 10 minutes.
+</span></span><span style="display:flex;"><span>Step 3: Rinse eggs under cold water.
+</span></span></code></pre><p>I added the main things I need right now, which include the author of the post and the title of the post. I also added a few pieces of information that I suspect I'll want later on, such as a short description of the post and the date. These two will be useful when showing a list of all of my blog posts.</p>
+<p>Next I started to look for ways to parse the frontmatter. One option is to find or create an extension for <a href="https://github.com/yuin/goldmark">goldmark</a>, my markdown library. Another option is to look for a standalone library that will parse the frontmatter and give me the remainder of the markdown file which I can then provide to goldmark to process.</p>
+<p>I found libraries for both options, but ultimately decided to go with a standalone library named <a href="https://github.com/adrg/frontmatter">frontmatter</a> because it felt easier and more intuitive to use. Your mileage may vary, so feel free to check out other options.</p>
+<p>Now that I have a library picked I installed it.</p>
+<pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;"><code><span style="display:flex;"><span>go get github.com/adrg/frontmatter
+</span></span></code></pre><p>I then proceeded to create a struct to represent a blog post. This replaced the <code>PostData</code> type I used temporarily in the last part of the exercise, and it has <code>toml</code> tags in it so I can more easily parse the frontmatter.</p>
+<pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;"><code><span style="display:flex;"><span><span style="color:#8be9fd;font-style:italic">type</span> Post <span style="color:#8be9fd;font-style:italic">struct</span> {
+</span></span><span style="display:flex;"><span>	Title   <span style="color:#8be9fd">string</span> <span style="color:#f1fa8c">`toml:&#34;title&#34;`</span>
+</span></span><span style="display:flex;"><span>	Slug    <span style="color:#8be9fd">string</span> <span style="color:#f1fa8c">`toml:&#34;slug&#34;`</span>
+</span></span><span style="display:flex;"><span>	Content template.HTML
+</span></span><span style="display:flex;"><span>	Author  Author <span style="color:#f1fa8c">`toml:&#34;author&#34;`</span>
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#8be9fd;font-style:italic">type</span> Author <span style="color:#8be9fd;font-style:italic">struct</span> {
+</span></span><span style="display:flex;"><span>	Name  <span style="color:#8be9fd">string</span> <span style="color:#f1fa8c">`toml:&#34;name&#34;`</span>
+</span></span><span style="display:flex;"><span>	Email <span style="color:#8be9fd">string</span> <span style="color:#f1fa8c">`toml:&#34;email&#34;`</span>
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre><p>With the type created, I updated the <code>PostHandler</code> function to parse the frontmatter into a <code>Post</code>.</p>
+<pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;"><code><span style="display:flex;"><span><span style="color:#8be9fd;font-style:italic">func</span> <span style="color:#50fa7b">PostHandler</span>(sl SlugReader) http.HandlerFunc {
+</span></span><span style="display:flex;"><span>	<span style="color:#ff79c6">return</span> <span style="color:#8be9fd;font-style:italic">func</span>(w http.ResponseWriter, r <span style="color:#ff79c6">*</span>http.Request) {
+</span></span><span style="display:flex;"><span>		<span style="color:#8be9fd;font-style:italic">var</span> post Post
+</span></span><span style="display:flex;"><span>		post.Slug = r.<span style="color:#50fa7b">PathValue</span>(<span style="color:#f1fa8c">&#34;slug&#34;</span>)
+</span></span><span style="display:flex;"><span>		postMarkdown, err <span style="color:#ff79c6">:=</span> sl.<span style="color:#50fa7b">Read</span>(post.Slug)
+</span></span><span style="display:flex;"><span>		<span style="color:#ff79c6">if</span> err <span style="color:#ff79c6">!=</span> <span style="color:#ff79c6">nil</span> {
+</span></span><span style="display:flex;"><span>			<span style="color:#6272a4">// TODO: Handle different errors in the future
+</span></span></span><span style="display:flex;"><span><span style="color:#6272a4"></span>			http.<span style="color:#50fa7b">Error</span>(w, <span style="color:#f1fa8c">&#34;Post not found&#34;</span>, http.StatusNotFound)
+</span></span><span style="display:flex;"><span>			<span style="color:#ff79c6">return</span>
+</span></span><span style="display:flex;"><span>		}
+</span></span><span style="display:flex;"><span>		rest, err <span style="color:#ff79c6">:=</span> frontmatter.<span style="color:#50fa7b">Parse</span>(strings.<span style="color:#50fa7b">NewReader</span>(postMarkdown), <span style="color:#ff79c6">&amp;</span>post)
+</span></span><span style="display:flex;"><span>		<span style="color:#ff79c6">if</span> err <span style="color:#ff79c6">!=</span> <span style="color:#ff79c6">nil</span> {
+</span></span><span style="display:flex;"><span>			http.<span style="color:#50fa7b">Error</span>(w, <span style="color:#f1fa8c">&#34;Error parsing frontmatter&#34;</span>, http.StatusInternalServerError)
+</span></span><span style="display:flex;"><span>			<span style="color:#ff79c6">return</span>
+</span></span><span style="display:flex;"><span>		}
+</span></span><span style="display:flex;"><span>    <span style="color:#6272a4">// ...
+</span></span></span><span style="display:flex;"><span><span style="color:#6272a4"></span>  }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre><p>At this point one thing I do want to note is that our <code>Read</code> method is returning a string, and then we immediately use <code>strings.NewReader</code> to turn this into an <code>io.Reader</code>. What this means is that we could have likely just had our <code>SlugReader</code> interface return an <code>io.Reader</code> instead of a string, which I may do later, but for exercises like this I'll often start with a string out of simplicity and familiarity, then adapt later once I know what the best fit is.</p>
+<p>From here I proceeded to update the <code>PostHandler</code> function to use the remainder of the markdown file's contents when converting it to HTML and then I passed the <code>post</code> variable with all of its data into the template.</p>
+<pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;"><code><span style="display:flex;"><span><span style="color:#8be9fd;font-style:italic">func</span> <span style="color:#50fa7b">PostHandler</span>(sl SlugReader) http.HandlerFunc {
+</span></span><span style="display:flex;"><span>	<span style="color:#ff79c6">return</span> <span style="color:#8be9fd;font-style:italic">func</span>(w http.ResponseWriter, r <span style="color:#ff79c6">*</span>http.Request) {
+</span></span><span style="display:flex;"><span>		<span style="color:#6272a4">// ...
+</span></span></span><span style="display:flex;"><span><span style="color:#6272a4"></span>
+</span></span><span style="display:flex;"><span>		err = mdRenderer.<span style="color:#50fa7b">Convert</span>(rest, <span style="color:#ff79c6">&amp;</span>buf)
+</span></span><span style="display:flex;"><span>		<span style="color:#ff79c6">if</span> err <span style="color:#ff79c6">!=</span> <span style="color:#ff79c6">nil</span> {
+</span></span><span style="display:flex;"><span>			http.<span style="color:#50fa7b">Error</span>(w, <span style="color:#f1fa8c">&#34;Error converting markdown&#34;</span>, http.StatusInternalServerError)
+</span></span><span style="display:flex;"><span>			<span style="color:#ff79c6">return</span>
+</span></span><span style="display:flex;"><span>		}
+</span></span><span style="display:flex;"><span>    <span style="color:#6272a4">// ... unchanged
+</span></span></span><span style="display:flex;"><span><span style="color:#6272a4"></span>		post.Content = template.<span style="color:#50fa7b">HTML</span>(buf.<span style="color:#50fa7b">String</span>())
+</span></span><span style="display:flex;"><span>		err = tpl.<span style="color:#50fa7b">Execute</span>(w, post)
+</span></span><span style="display:flex;"><span>	}
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre><p>Due to a change in how I structured the <code>Author</code> field, I needed to also update my template quickly. The only part that changed was in the <code>&lt;div&gt;</code> that contained the blog post, so I'll show that below.</p>
+<pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;"><code><span style="display:flex;"><span>&lt;<span style="color:#ff79c6">div</span> <span style="color:#50fa7b">class</span><span style="color:#ff79c6">=</span><span style="color:#f1fa8c">&#34;container mx-auto&#34;</span>&gt;
+</span></span><span style="display:flex;"><span>  &lt;<span style="color:#ff79c6">h1</span> <span style="color:#50fa7b">class</span><span style="color:#ff79c6">=</span><span style="color:#f1fa8c">&#34;text-4xl font-bold text-center&#34;</span>&gt;{{.Title}}&lt;/<span style="color:#ff79c6">h1</span>&gt;
+</span></span><span style="display:flex;"><span>  {{with .Author}}
+</span></span><span style="display:flex;"><span>  &lt;<span style="color:#ff79c6">div</span> <span style="color:#50fa7b">class</span><span style="color:#ff79c6">=</span><span style="color:#f1fa8c">&#34;text-center mt-4&#34;</span>&gt;
+</span></span><span style="display:flex;"><span>    &lt;<span style="color:#ff79c6">p</span> <span style="color:#50fa7b">class</span><span style="color:#ff79c6">=</span><span style="color:#f1fa8c">&#34;text-gray-500&#34;</span>&gt;Author: &lt;<span style="color:#ff79c6">a</span> <span style="color:#50fa7b">href</span><span style="color:#ff79c6">=</span><span style="color:#f1fa8c">&#34;mailto:{{.Email}}&#34;</span>&gt;{{.Name}}&lt;/<span style="color:#ff79c6">a</span>&gt;&lt;/<span style="color:#ff79c6">p</span>&gt;
+</span></span><span style="display:flex;"><span>  &lt;/<span style="color:#ff79c6">div</span>&gt;
+</span></span><span style="display:flex;"><span>  {{end}}
+</span></span><span style="display:flex;"><span>  &lt;<span style="color:#ff79c6">div</span> <span style="color:#50fa7b">class</span><span style="color:#ff79c6">=</span><span style="color:#f1fa8c">&#34;prose max-w-full&#34;</span>&gt;
+</span></span><span style="display:flex;"><span>    {{.Content}}
+</span></span><span style="display:flex;"><span>  &lt;/<span style="color:#ff79c6">div</span>&gt;
+</span></span><span style="display:flex;"><span>&lt;/<span style="color:#ff79c6">div</span>&gt;
+</span></span></code></pre><p>My blog posts were showing the title twice at this point, so my final task was to remove the <code>#</code> title piece from each blog post. This seems to be pretty standard with a lot of blog platforms and themes, but if we really wanted to keep the title heading inside of our markdown we could likely figure out a way to extend goldmark to ignore the first <code>h1</code> heading in each file. I won't be doing that, but feel free to explore goldmark a bit to see how you might do it if you want!</p>
+
+    </article>
+
+    <nav class="mt-8 text-xs text-zinc-400 flex justify-between">
+        <span></span>
+        <a class="hover:underline" href="/sagas/first-saga/first-arc/ep-02-the-second-one/">Ep 02 Episode 2 — The Second one →</a>
+    </nav>
+
+
+    <footer class="mt-10 text-xs text-zinc-500">
+        © 2025 wastingnotime.org — built with Go
+    </footer>
+</div>
+</body>
+</html>
+
