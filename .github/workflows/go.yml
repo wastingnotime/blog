@@ -37,7 +37,10 @@ jobs:
     - name: execute generator
       run: ./build
 
-
+    - name: Upload artifact
+      uses: actions/upload-pages-artifact@v3
+      with:
+        path: ./public
 
 
   # Deployment job
