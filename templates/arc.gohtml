@@ -13,7 +13,7 @@
             <ul class="space-y-1">
                 {{ range .Episodes }}
                     <li>
-                        <a class="hover:underline" href="/sagas/{{ $.Saga.Slug }}/{{ $.Arc.Slug }}/{{ .Slug }}/">[Ep {{ printf "%02d" .Number }}] {{ .Title }}</a>
+                        <a class="hover:underline" href="{{ href (printf "/sagas/%s/%s/%s/" $.Saga.Slug $.Arc.Slug .Slug) }}">[Ep {{ printf "%02d" .Number }}] {{ .Title }}</a>
                         <span class="text-zinc-500 text-xs">— {{ .Date.Format "2006-01-02" }}</span>
                     </li>
                 {{ end }}
@@ -24,7 +24,7 @@
     </section>
 
     <nav class="mt-6 text-xs text-zinc-400 flex justify-between">
-        {{ if .PrevArc }}<a class="hover:underline" href="/sagas/{{ .Saga.Slug }}/{{ .PrevArc.Slug }}/">← {{ .PrevArc.Title }}</a>{{ else }}<span></span>{{ end }}
-        {{ if .NextArc }}<a class="hover:underline" href="/sagas/{{ .Saga.Slug }}/{{ .NextArc.Slug }}//">{{ .NextArc.Title }} →</a>{{ end }}
+        {{ if .PrevArc }}<a class="hover:underline" href="{{ href (printf "/sagas/%s/%s/" .Saga.Slug .PrevArc.Slug) }}">← {{ .PrevArc.Title }}</a>{{ else }}<span></span>{{ end }}
+        {{ if .NextArc }}<a class="hover:underline" href="{{ href (printf "/sagas/%s/%s/" .Saga.Slug .NextArc.Slug) }}">{{ .NextArc.Title }} →</a>{{ end }}
     </nav>
 {{ end }}
