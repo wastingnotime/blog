@@ -4,3 +4,6 @@
 
 # generated on local env only - for tests purposes
 public
+
+# locally downloaded Go toolchains
+go*.tar.gz

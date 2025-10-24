@@ -12,7 +12,7 @@
         <ul class="space-y-1">
             {{ range .LatestEpisodes }}
                 <li>
-                    <a class="hover:underline" href="/sagas/{{ .SagaSlug }}/{{ .ArcSlug }}/{{ .Slug }}/">
+                    <a class="hover:underline" href="{{ href (printf "/sagas/%s/%s/%s/" .SagaSlug .ArcSlug .Slug) }}">
                         [Ep {{ printf "%02d" .Number }}] {{ .Title }}
                     </a>
                     <span class="text-zinc-500 text-xs">— {{ .ArcTitle }} / {{ .SagaTitle }} / {{ .Date.Format "2006-01-02" }}</span>
@@ -27,7 +27,7 @@
         <ul class="space-y-1">
             {{ range .Sagas }}
                 <li>
-                    <a class="hover:underline" href="/sagas/{{ .Slug }}/">[Saga] {{ .Title }}</a>
+                    <a class="hover:underline" href="{{ href (printf "/sagas/%s/" .Slug) }}">[Saga] {{ .Title }}</a>
                     <span class="text-zinc-500 text-xs">— {{ .EpisodeCount }} eps; last {{ if .LastRelease }}{{ .LastRelease.Format "2006-01-02" }}{{ else }}n/a{{ end }}; {{ .Status }}</span>
                 </li>
             {{ end }}

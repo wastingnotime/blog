@@ -13,11 +13,11 @@
         <section class="mb-5">
             <h2 class="text-sm text-zinc-400 mb-1">CURRENT ARC</h2>
             <div>
-                <a class="hover:underline" href="/sagas/{{ .Saga.Slug }}/{{ .CurrentArc.Slug }}/">[Arc] {{ .CurrentArc.Title }}</a>
+                <a class="hover:underline" href="{{ href (printf "/sagas/%s/%s/" .Saga.Slug .CurrentArc.Slug) }}">[Arc] {{ .CurrentArc.Title }}</a>
                 {{ if .CurrentArc.LatestEpisodes }}
                     <span class="text-zinc-500 text-xs">— latest:
         {{ range $i, $e := .CurrentArc.LatestEpisodes }}
-            {{ if $i }}, {{ end }}<a class="hover:underline" href="/sagas/{{ $.Saga.Slug }}/{{ $e.ArcSlug }}/{{ $e.Slug }}/">Ep {{ printf "%02d" $e.Number }}</a>
+            {{ if $i }}, {{ end }}<a class="hover:underline" href="{{ href (printf "/sagas/%s/%s/%s/" $.Saga.Slug $e.ArcSlug $e.Slug) }}">Ep {{ printf "%02d" $e.Number }}</a>
         {{ end }}
       </span>
                 {{ end }}
@@ -31,7 +31,7 @@
         <ul class="space-y-1">
             {{ range .Arcs }}
                 <li>
-                    <a class="hover:underline" href="/sagas/{{ $.Saga.Slug }}/{{ .Slug }}/">[Arc] {{ .Title }}</a>
+                    <a class="hover:underline" href="{{ href (printf "/sagas/%s/%s/" $.Saga.Slug .Slug) }}">[Arc] {{ .Title }}</a>
                     <span class="text-zinc-500 text-xs">— {{ .EpisodeCount }} eps{{ if .LastRelease }}; last {{ .LastRelease.Format "2006-01-02" }}{{ end }}</span>
                 </li>
             {{ end }}
@@ -45,7 +45,7 @@
             <ul class="space-y-1">
                 {{ range .SagaTimeline }}
                     <li>
-                        <a class="hover:underline" href="/sagas/{{ $.Saga.Slug }}/{{ .ArcSlug }}/{{ .Slug }}/">[Ep {{ printf "%02d" .Number }}] {{ .Title }}</a>
+                        <a class="hover:underline" href="{{ href (printf "/sagas/%s/%s/%s/" $.Saga.Slug .ArcSlug .Slug) }}">[Ep {{ printf "%02d" .Number }}] {{ .Title }}</a>
                         <span class="text-zinc-500 text-xs">— {{ .ArcTitle }} / {{ .Date.Format "2006-01-02" }}</span>
                     </li>
                 {{ end }}

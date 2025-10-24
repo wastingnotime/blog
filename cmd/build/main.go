@@ -1,7 +1,6 @@
 package main
 
 import (
-	"errors"
 	"html/template"
 	"log"
 	"os"
@@ -40,19 +39,15 @@ type HomeEpisode struct {
 // episode header payload used by templates/episode.tmpl
 // (we pass it as a map[string]any for flexibility)
 
-// loadBase loads base layout + partials (no page views!)
-func loadBase() *template.Template {
-	// adjust to your paths
-	base := template.Must(template.ParseFiles(
-		"templates/base.gohtml",
-	))
-	return base
+// loadBase loads the base layout with the site's helper funcs applied.
+func loadBase(cfg site.Config) *template.Template {
+	return template.Must(template.New("base").Funcs(site.Funcs(cfg)).ParseFiles("templates/base.gohtml"))
 }
 
-// renderView clones base and parses the view file(s) into the clone.
+// renderView executes a named view into the target output file.
 func renderView(base *template.Template, viewName string, outPath string, data any, viewFiles ...string) {
 	t := template.Must(base.Clone())
-	t = template.Must(t.ParseFiles(viewFiles...)) // e.g. "templates/home.gohtml"
+	t = template.Must(t.ParseFiles(viewFiles...))
 	if err := os.MkdirAll(filepath.Dir(outPath), 0o755); err != nil {
 		panic(err)
 	}
@@ -66,41 +61,19 @@ func renderView(base *template.Template, viewName string, outPath string, data a
 	}
 }
 
-// helper
-func dict(values ...interface{}) (map[string]interface{}, error) {
-	if len(values)%2 != 0 {
-		return nil, errors.New("invalid dict call")
-	}
-	dict := make(map[string]interface{})
-	for i := 0; i < len(values); i += 2 {
-		key, ok := values[i].(string)
-		if !ok {
-			return nil, errors.New("dict keys must be strings")
-		}
-		dict[key] = values[i+1]
-	}
-	return dict, nil
-}
-
 // ---- main ----
 
 func main() {
+	cfg := site.ConfigFromEnv()
 	// 1) Load content (sagas, arcs, episodes as parsed structs)
 	sagas, latest, err := site.Load("content")
 	if err != nil {
 		log.Fatalf("load: %v", err)
 	}
 
-	base := loadBase()
+	base := loadBase(cfg)
 
-	// 2) Parse all templates
-	//t := template.New("").Funcs(template.FuncMap{"dict": dict})
-	//t = template.Must(t.ParseGlob("templates/**/*.gohtml"))
-	//t = template.Must(t.ParseGlob("templates/*.gohtml"))
-
-	//t := template.Must(template.ParseGlob("templates/**/*.gohtml"))
-
-	// 3) Render Home
+	// 2) Render Home
 	homeData := map[string]any{
 		"Sagas":          toHomeSagas(sagas),
 		"LatestEpisodes": toHomeLatest(latest),
@@ -115,7 +88,7 @@ func main() {
 		"templates/home.gohtml",
 	)
 
-	// 4) Render Library
+	// 3) Render Library
 	libData := map[string]any{
 		"Sagas":   sagas,
 		"Query":   "",
