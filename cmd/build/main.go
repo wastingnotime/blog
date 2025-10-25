@@ -185,6 +185,7 @@ func main() {
 
 	// 2) Render Home
 	homeData := map[string]any{
+		"Section":        "home",
 		"Sagas":          toHomeSagas(sagas),
 		"LatestEpisodes": toHomeLatest(latest),
 		"RecentPosts":    toHomeRecent(latest, recentPosts, homeRecentLimit),
@@ -200,9 +201,10 @@ func main() {
 	)
 
 	// 3) Render Library
-	libraryData := site.LibraryIndexData{
-		Tags:    libraryTags,
-		NowYear: nowYear,
+	libraryData := map[string]any{
+		"Section": "library",
+		"Tags":    libraryTags,
+		"NowYear": nowYear,
 	}
 
 	renderView(base,
@@ -213,10 +215,11 @@ func main() {
 	)
 
 	for _, tag := range libraryTags {
-		pageData := site.TagPageData{
-			Tag:     tag.Name,
-			Posts:   tagIndex[tag.Name],
-			NowYear: nowYear,
+		pageData := map[string]any{
+			"Section": "library",
+			"Tag":     tag.Name,
+			"Posts":   tagIndex[tag.Name],
+			"NowYear": nowYear,
 		}
 		renderView(base,
 			"tag",
@@ -227,6 +230,7 @@ func main() {
 	}
 
 	aboutData := map[string]any{
+		"Section": "about",
 		"Page":    aboutPage,
 		"NowYear": nowYear,
 	}
@@ -239,6 +243,7 @@ func main() {
 	)
 
 	sagasData := map[string]any{
+		"Section":       "sagas",
 		"SagaSummaries": sagaSummaries,
 		"NowYear":       nowYear,
 	}
@@ -349,6 +354,7 @@ func main() {
 
 		// Render Saga page
 		sagaData := map[string]any{
+			"Section":      "sagas",
 			"Saga":         sagaHero,
 			"CurrentArc":   currentArcData,
 			"Arcs":         arcsLite,
@@ -400,6 +406,7 @@ func main() {
 			}
 
 			arcData := map[string]any{
+				"Section":       "sagas",
 				"Saga":          map[string]any{"Title": s.Title, "Slug": s.Slug},
 				"Arc":           arcHero,
 				"Episodes":      epRefs,
@@ -452,6 +459,7 @@ func main() {
 				}
 
 				episodeData := map[string]any{
+					"Section":       "sagas",
 					"EpisodeHeader": eh,
 					"EpisodeHTML":   e.BodyHTML, // already safe via goldmark
 					"Prev":          prevRef,
@@ -475,6 +483,7 @@ func main() {
 	for _, p := range posts {
 		out := postOutputPath(p.Permalink)
 		postData := map[string]any{
+			"Section": "library",
 			"Post":    p,
 			"NowYear": time.Now().Year(),
 		}
