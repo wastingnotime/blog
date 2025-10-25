@@ -32,19 +32,20 @@ Expected data passed from builder:
     <h2 class="text-sm text-zinc-400 mb-2">INDEX</h2>
     <ul class="space-y-3">
         {{ range .Sagas }}
+        {{ $saga := . }}
         <li>
             <div class="mb-1">
-                <a class="hover:underline" href="{{ href (printf "/sagas/%s/" .Slug) }}">[Saga] {{ .Title }}</a>
+                <a class="hover:underline" href="{{ href (printf "/sagas/%s/" $saga.Slug) }}">[Saga] {{ $saga.Title }}</a>
                 <span class="text-zinc-500 text-xs">— {{ .EpisodeCount }} eps; {{ .Status }}{{ if .LastRelease }}; last {{ .LastRelease.Format "2006-01-02" }}{{ end }}</span>
             </div>
 
             {{ if .Arcs }}
             <ul class="ml-4 space-y-2">
-                {{ range .Arcs }}
+                {{ range $saga.Arcs }}
                 <li>
                     <details class="group">
                         <summary class="cursor-pointer list-none flex items-center gap-2">
-                            <a class="hover:underline" href="{{ href (printf "/sagas/%s/%s/" $.Slug .Slug) }}">[Arc] {{ .Title }}</a>
+                            <a class="hover:underline" href="{{ href (printf "/sagas/%s/%s/" $saga.Slug .Slug) }}">[Arc] {{ .Title }}</a>
                             <span class="text-zinc-500 text-xs">— {{ len .Episodes }} eps</span>
                         </summary>
                         <div class="mt-1 ml-4">
@@ -52,7 +53,7 @@ Expected data passed from builder:
                             <ul class="space-y-1">
                                 {{ range .Episodes }}
                                 <li>
-                                    <a class="hover:underline" href="{{ href (printf "/sagas/%s/%s/%s/" $.Slug .ArcSlug .Slug) }}">[Ep {{ printf "%02d" .Number }}] {{ .Title }}</a>
+                                    <a class="hover:underline" href="{{ href (printf "/sagas/%s/%s/%s/" $saga.Slug .ArcSlug .Slug) }}">[Ep {{ printf "%02d" .Number }}] {{ .Title }}</a>
                                     <span class="text-zinc-500 text-xs">— {{ .Date.Format "2006-01-02" }}</span>
                                 </li>
                                 {{ end }}
