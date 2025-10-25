@@ -29,6 +29,7 @@ type Saga struct {
 	RSS           string
 	FirstEpisode  *EpisodeRef
 	LatestEpisode *EpisodeRef
+	Order         int
 }
 
 type Arc struct {
@@ -39,6 +40,7 @@ type Arc struct {
 	Episodes     []*Episode
 	EpisodeCount int
 	LastRelease  *time.Time
+	Order        int
 }
 
 type Episode struct {
@@ -208,7 +210,19 @@ func Load(contentRoot string) ([]*Saga, []*EpisodeRef, error) {
 		}
 		s.Status = SagaStatus(s.LastRelease)
 		out = append(out, s)
-		sort.SliceStable(s.Arcs, func(i, j int) bool { return s.Arcs[i].Title < s.Arcs[j].Title })
+		sort.SliceStable(s.Arcs, func(i, j int) bool {
+			oi, oj := s.Arcs[i].Order, s.Arcs[j].Order
+			switch {
+			case oi != 0 && oj != 0 && oi != oj:
+				return oi < oj
+			case oi != 0 && oj == 0:
+				return true
+			case oi == 0 && oj != 0:
+				return false
+			default:
+				return s.Arcs[i].Title < s.Arcs[j].Title
+			}
+		})
 	}
 
 	// sort latest desc
@@ -229,6 +243,16 @@ func Load(contentRoot string) ([]*Saga, []*EpisodeRef, error) {
 
 	// final sort sagas by last release desc
 	sort.SliceStable(out, func(i, j int) bool {
+		oi, oj := out[i].Order, out[j].Order
+		switch {
+		case oi != 0 && oj != 0 && oi != oj:
+			return oi < oj
+		case oi != 0 && oj == 0:
+			return true
+		case oi == 0 && oj != 0:
+			return false
+		}
+
 		li, lj := out[i].LastRelease, out[j].LastRelease
 		if li == nil {
 			return false
@@ -332,6 +356,11 @@ func applySagaFrontmatter(s *Saga, fm map[string]any) {
 	if v, _ := fm["rss"].(string); v != "" {
 		s.RSS = v
 	}
+	if v, ok := fm["order"]; ok {
+		if n, ok := toInt(v); ok {
+			s.Order = n
+		}
+	}
 }
 
 func applyArcFrontmatter(a *Arc, fm map[string]any) {
@@ -344,6 +373,11 @@ func applyArcFrontmatter(a *Arc, fm map[string]any) {
 	if v, _ := fm["emoji"].(string); v != "" {
 		a.Emoji = v
 	}
+	if v, ok := fm["order"]; ok {
+		if n, ok := toInt(v); ok {
+			a.Order = n
+		}
+	}
 }
 
 func applyEpisodeFrontmatter(e *Episode, fm map[string]any) {
@@ -353,8 +387,10 @@ func applyEpisodeFrontmatter(e *Episode, fm map[string]any) {
 	if v, _ := fm["slug"].(string); v != "" {
 		e.Slug = v
 	}
-	if v, ok := fm["number"].(int); ok {
-		e.Number = v
+	if v, ok := fm["number"]; ok {
+		if n, ok := toInt(v); ok {
+			e.Number = n
+		}
 	}
 	if v, ok := fm["date"].(string); ok {
 		theTime, err := time.Parse("2006-01-02", v)
@@ -382,6 +418,24 @@ func toStrings(xs []any) []string {
 		}
 	}
 	return out
+}
+
+func toInt(v any) (int, bool) {
+	switch n := v.(type) {
+	case int:
+		return n, true
+	case int64:
+		return int(n), true
+	case uint64:
+		return int(n), true
+	case float64:
+		if n != float64(int(n)) {
+			return 0, false
+		}
+		return int(n), true
+	default:
+		return 0, false
+	}
 }
 
 func parseFrontmatter(path string) (Post, error) {
