@@ -2,18 +2,22 @@
     {{ template "base" . }}
 {{ end }}
 
-{{ define "title" }}{{ .Arc.Title }} — {{ .Saga.Title }}{{ end }}
-{{ define "h1" }}[Arc] {{ .Arc.Title }} — {{ .Saga.Title }}{{ end }}
+{{ define "title" }}{{ .ArcTitle }} — {{ .SagaTitle }}{{ end }}
+{{ define "h1" }}[Arc] {{ .ArcTitle }} — {{ .SagaTitle }}{{ end }}
 
 {{ define "content" }}
-    {{ if .Arc.Summary }}<p class="text-sm text-zinc-400 mb-4">{{ .Arc.Summary }}</p>{{ end }}
+    <nav class="breadcrumb">
+        <a href="{{ href .SagaURL }}">← {{ .SagaTitle }}</a>
+    </nav>
+    <h2 class="arc-name">{{ .ArcTitle }}</h2>
+    {{ if .ArcSummary }}<p class="text-sm text-zinc-400 mb-4">{{ .ArcSummary }}</p>{{ end }}
     <section>
         <h2 class="text-sm text-zinc-400 mb-2">EPISODES</h2>
         {{ if .Episodes }}
             <ul class="space-y-1">
                 {{ range .Episodes }}
                     <li>
-                        <a class="hover:underline" href="{{ href (printf "/sagas/%s/%s/%s/" $.Saga.Slug $.Arc.Slug .Slug) }}">[Ep {{ printf "%02d" .Number }}] {{ .Title }}</a>
+                        <a class="hover:underline" href="{{ href (printf "/sagas/%s/%s/%s/" .SagaSlug .ArcSlug .Slug) }}">[Ep {{ printf "%02d" .Number }}] {{ .Title }}</a>
                         <span class="text-zinc-500 text-xs">— {{ .Date.Format "2006-01-02" }}</span>
                     </li>
                 {{ end }}
@@ -24,7 +28,7 @@
     </section>
 
     <nav class="mt-6 text-xs text-zinc-400 flex justify-between">
-        {{ if .PrevArc }}<a class="hover:underline" href="{{ href (printf "/sagas/%s/%s/" .Saga.Slug .PrevArc.Slug) }}">← {{ .PrevArc.Title }}</a>{{ else }}<span></span>{{ end }}
-        {{ if .NextArc }}<a class="hover:underline" href="{{ href (printf "/sagas/%s/%s/" .Saga.Slug .NextArc.Slug) }}">{{ .NextArc.Title }} →</a>{{ end }}
+        {{ if .PrevArc }}<a class="hover:underline" href="{{ href .PrevArc.URL }}">← {{ .PrevArc.Title }}</a>{{ else }}<span></span>{{ end }}
+        {{ if .NextArc }}<a class="hover:underline" href="{{ href .NextArc.URL }}">{{ .NextArc.Title }} →</a>{{ end }}
     </nav>
 {{ end }}

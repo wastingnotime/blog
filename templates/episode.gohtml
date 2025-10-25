@@ -2,23 +2,29 @@
     {{ template "base" . }}
 {{ end }}
 
-{{ define "title" }}{{ .EpisodeHeader.Title }} — {{ .Saga.Title }}{{ end }}
-{{ define "h1" }}[Ep {{ printf "%02d" .EpisodeHeader.Number }}] {{ .EpisodeHeader.Title }} — {{ .Arc.Title }} / {{ .Saga.Title }}{{ end }}
+{{ define "title" }}{{ .EpisodeTitle }} — {{ .SagaTitle }}{{ end }}
+{{ define "h1" }}[Ep {{ printf "%02d" .EpisodeNumber }}] {{ .EpisodeTitle }} — {{ .ArcTitle }} / {{ .SagaTitle }}{{ end }}
 
 {{ define "content" }}
+    <nav class="breadcrumb">
+        <a href="{{ href .SagaURL }}">← {{ .SagaTitle }}</a>
+        <span class="sep">/</span>
+        <a href="{{ href .ArcURL }}">{{ .ArcTitle }}</a>
+    </nav>
+    <h2 class="episode-title">{{ .EpisodeTitle }}</h2>
     <div class="text-xs text-zinc-500 mb-3">
-        {{ .EpisodeHeader.Date.Format "2006-01-02" }} · {{ if .EpisodeHeader.ReadingTime }}{{ .EpisodeHeader.ReadingTime }} · {{ end }}<a class="hover:underline" href="{{ href (printf "/sagas/%s/%s/" .Saga.Slug .Arc.Slug) }}">back to arc</a>
+        {{ .EpisodeDate.Format "2006-01-02" }} · {{ if .EpisodeReadingTime }}{{ .EpisodeReadingTime }} · {{ end }}<a class="hover:underline" href="{{ href .ArcURL }}">back to arc</a>
     </div>
-    {{ if .EpisodeHeader.Subtitle }}
-    <p class="text-sm text-zinc-400 mb-4">{{ .EpisodeHeader.Subtitle }}</p>
+    {{ if .EpisodeSummary }}
+    <p class="text-sm text-zinc-400 mb-4">{{ .EpisodeSummary }}</p>
     {{ end }}
 
     <article class="prose prose-invert max-w-none">
-        {{ .EpisodeHTML }}
+        {{ .EpisodeBody }}
     </article>
 
     <nav class="mt-8 text-xs text-zinc-400 flex justify-between">
-        {{ if .Prev }}<a class="hover:underline" href="{{ href (printf "/sagas/%s/%s/%s/" .Saga.Slug .Arc.Slug .Prev.Slug) }}">← Ep {{ printf "%02d" .Prev.Number }} {{ .Prev.Title }}</a>{{ else }}<span></span>{{ end }}
-        {{ if .Next }}<a class="hover:underline" href="{{ href (printf "/sagas/%s/%s/%s/" .Saga.Slug .Arc.Slug .Next.Slug) }}">Ep {{ printf "%02d" .Next.Number }} {{ .Next.Title }} →</a>{{ end }}
+        {{ if .PrevEpisode }}<a class="hover:underline" href="{{ href .PrevEpisode.URL }}">← Ep {{ printf "%02d" .PrevEpisode.Number }} {{ .PrevEpisode.Title }}</a>{{ else }}<span></span>{{ end }}
+        {{ if .NextEpisode }}<a class="hover:underline" href="{{ href .NextEpisode.URL }}">Ep {{ printf "%02d" .NextEpisode.Number }} {{ .NextEpisode.Title }} →</a>{{ end }}
     </nav>
 {{ end }}
