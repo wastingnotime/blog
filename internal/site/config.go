@@ -8,6 +8,7 @@ import (
 
 type Config struct {
 	BasePath string
+	BaseURL  string
 }
 
 func ConfigFromEnv() Config {
@@ -15,11 +16,35 @@ func ConfigFromEnv() Config {
 	if base == "" {
 		base = os.Getenv("BASE_PATH")
 	}
-	return Config{BasePath: normalizeBasePath(base)}
+	baseURL := os.Getenv("SITE_BASE_URL")
+	if baseURL == "" {
+		baseURL = os.Getenv("BASE_URL")
+	}
+	return Config{
+		BasePath: normalizeBasePath(base),
+		BaseURL:  normalizeBaseURL(baseURL),
+	}
 }
 
 func (c Config) Href(p string) string {
 	return buildHref(c.BasePath, p)
+}
+
+func (c Config) AbsoluteURL(p string) string {
+	href := c.Href(p)
+	if c.BaseURL == "" {
+		return href
+	}
+	if strings.HasPrefix(href, "http://") || strings.HasPrefix(href, "https://") {
+		return href
+	}
+	if href == "" {
+		return c.BaseURL
+	}
+	if strings.HasPrefix(href, "/") {
+		return c.BaseURL + href
+	}
+	return c.BaseURL + "/" + href
 }
 
 func normalizeBasePath(in string) string {
@@ -52,4 +77,12 @@ func buildHref(basePath, target string) string {
 		return basePath + "/"
 	}
 	return basePath + target
+}
+
+func normalizeBaseURL(in string) string {
+	in = strings.TrimSpace(in)
+	if in == "" {
+		return ""
+	}
+	return strings.TrimRight(in, "/")
 }

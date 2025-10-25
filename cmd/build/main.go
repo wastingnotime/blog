@@ -552,10 +552,13 @@ type sitemapURLEntry struct {
 }
 
 func writeSitemap(cfg site.Config, sagas []*site.Saga, posts []site.Post) error {
+	if cfg.BaseURL == "" {
+		return fmt.Errorf("site base URL must be configured for sitemap generation")
+	}
 	entries := map[string]*sitemapEntry{}
 
 	add := func(path string, lastMod *time.Time) {
-		loc := cfg.Href(path)
+		loc := cfg.AbsoluteURL(path)
 		if existing, ok := entries[loc]; ok {
 			if lastMod != nil && (existing.LastMod.IsZero() || lastMod.After(existing.LastMod)) {
 				existing.LastMod = *lastMod
