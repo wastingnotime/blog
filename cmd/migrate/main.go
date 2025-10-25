@@ -191,8 +191,12 @@ func validateSaga(fm map[string]any) []string {
 	if !hasNonEmptyString(fm, "title") {
 		errs = append(errs, "missing required field 'title'")
 	}
-	if !hasNonEmptyString(fm, "slug") {
-		errs = append(errs, "missing required field 'slug'")
+	if v, ok := fm["slug"]; ok {
+		if !isString(v) {
+			errs = append(errs, "'slug' must be a string")
+		} else if strings.TrimSpace(v.(string)) == "" {
+			errs = append(errs, "'slug' cannot be empty")
+		}
 	}
 	if !hasNonEmptyString(fm, "summary") {
 		errs = append(errs, "missing required field 'summary'")
@@ -217,8 +221,12 @@ func validateArc(fm map[string]any) []string {
 	if !hasNonEmptyString(fm, "title") {
 		errs = append(errs, "missing required field 'title'")
 	}
-	if !hasNonEmptyString(fm, "slug") {
-		errs = append(errs, "missing required field 'slug'")
+	if v, ok := fm["slug"]; ok {
+		if !isString(v) {
+			errs = append(errs, "'slug' must be a string")
+		} else if strings.TrimSpace(v.(string)) == "" {
+			errs = append(errs, "'slug' cannot be empty")
+		}
 	}
 	if !hasNonEmptyString(fm, "summary") {
 		errs = append(errs, "missing required field 'summary'")
