@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"strings"
 	"time"
 
 	"github.com/wastingnotime/blog/internal/site"
@@ -85,9 +86,13 @@ func main() {
 		log.Fatalf("load: %v", err)
 	}
 
-	recentPosts, err := site.BuildRecent(filepath.Join("content", "posts"), homeRecentLimit)
+	posts, err := site.LoadPosts(filepath.Join("content", "posts"))
 	if err != nil {
-		log.Fatalf("recent posts: %v", err)
+		log.Fatalf("load posts: %v", err)
+	}
+	recentPosts := posts
+	if len(recentPosts) > homeRecentLimit {
+		recentPosts = recentPosts[:homeRecentLimit]
 	}
 
 	base := loadBase(cfg)
@@ -343,6 +348,20 @@ func main() {
 			}
 		}
 	}
+
+	for _, p := range posts {
+		out := postOutputPath(p.Permalink)
+		postData := map[string]any{
+			"Post":    p,
+			"NowYear": time.Now().Year(),
+		}
+		renderView(base,
+			"post",
+			out,
+			postData,
+			"templates/post.gohtml",
+		)
+	}
 }
 
 // ---- utilities ----
@@ -387,6 +406,19 @@ func toHomeSagas(sagas []*site.Saga) []HomeSaga {
 		return li.After(*lj)
 	})
 	return out
+}
+
+func postOutputPath(permalink string) string {
+	perm := strings.TrimSpace(permalink)
+	if perm == "" || perm == "/" {
+		return filepath.Join("public", "index.html")
+	}
+	perm = strings.TrimPrefix(perm, "/")
+	perm = strings.TrimSuffix(perm, "/")
+	if perm == "" {
+		return filepath.Join("public", "index.html")
+	}
+	return filepath.Join("public", filepath.FromSlash(perm), "index.html")
 }
 
 func toHomeRecent(latest []*site.EpisodeRef, posts []site.Post, limit int) []HomeRecent {
