@@ -2,13 +2,16 @@
     {{ template "base" . }}
 {{ end }}
 
-{{ define "title" }}{{ .Episode.Title }} — {{ .Saga.Title }}{{ end }}
-{{ define "h1" }}[Ep {{ printf "%02d" .Episode.Number }}] {{ .Episode.Title }} — {{ .Arc.Title }} / {{ .Saga.Title }}{{ end }}
+{{ define "title" }}{{ .EpisodeHeader.Title }} — {{ .Saga.Title }}{{ end }}
+{{ define "h1" }}[Ep {{ printf "%02d" .EpisodeHeader.Number }}] {{ .EpisodeHeader.Title }} — {{ .Arc.Title }} / {{ .Saga.Title }}{{ end }}
 
 {{ define "content" }}
     <div class="text-xs text-zinc-500 mb-3">
-        {{ .Episode.Date.Format "2006-01-02" }} · {{ if .Episode.ReadingTime }}{{ .Episode.ReadingTime }} · {{ end }}<a class="hover:underline" href="{{ href (printf "/sagas/%s/%s/" .Saga.Slug .Arc.Slug) }}">back to arc</a>
+        {{ .EpisodeHeader.Date.Format "2006-01-02" }} · {{ if .EpisodeHeader.ReadingTime }}{{ .EpisodeHeader.ReadingTime }} · {{ end }}<a class="hover:underline" href="{{ href (printf "/sagas/%s/%s/" .Saga.Slug .Arc.Slug) }}">back to arc</a>
     </div>
+    {{ if .EpisodeHeader.Subtitle }}
+    <p class="text-sm text-zinc-400 mb-4">{{ .EpisodeHeader.Subtitle }}</p>
+    {{ end }}
 
     <article class="prose prose-invert max-w-none">
         {{ .EpisodeHTML }}

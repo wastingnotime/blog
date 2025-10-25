@@ -20,7 +20,7 @@ type HomeSaga struct {
 	Summary      string
 	Emoji        string
 	EpisodeCount int
-	LastRelease  time.Time
+	LastRelease  *time.Time
 	Status       string
 }
 
@@ -365,22 +365,27 @@ func write(t *template.Template, name, out string, data any) {
 func toHomeSagas(sagas []*site.Saga) []HomeSaga {
 	out := make([]HomeSaga, 0, len(sagas))
 	for _, s := range sagas {
-		var last time.Time
-		if s.LastRelease != nil {
-			last = *s.LastRelease
-		}
 		out = append(out, HomeSaga{
 			Title:        s.Title,
 			Slug:         s.Slug,
 			Summary:      s.Summary,
 			Emoji:        s.Emoji,
 			EpisodeCount: s.EpisodeCount,
-			LastRelease:  last,
+			LastRelease:  s.LastRelease,
 			Status:       s.Status,
 		})
 	}
 	// sort by last release desc
-	sort.SliceStable(out, func(i, j int) bool { return out[i].LastRelease.After(out[j].LastRelease) })
+	sort.SliceStable(out, func(i, j int) bool {
+		li, lj := out[i].LastRelease, out[j].LastRelease
+		if li == nil {
+			return false
+		}
+		if lj == nil {
+			return true
+		}
+		return li.After(*lj)
+	})
 	return out
 }
 

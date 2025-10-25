@@ -147,7 +147,7 @@ func Load(contentRoot string) ([]*Saga, []*EpisodeRef, error) {
 				return nil
 			}
 			// episode file
-			ep := &Episode{SagaSlug: sagaSlug, ArcSlug: arcSlug}
+			ep := &Episode{SagaSlug: sagaSlug, ArcSlug: arcSlug, Slug: strings.TrimSuffix(filepath.Base(path), ".md")}
 			applyEpisodeFrontmatter(ep, fm)
 
 			var buf bytes.Buffer
@@ -177,6 +177,23 @@ func Load(contentRoot string) ([]*Saga, []*EpisodeRef, error) {
 	})
 	if err != nil {
 		return nil, nil, err
+	}
+
+	// ensure episode refs have final saga/arc titles
+	for _, ref := range latest {
+		if s, ok := sagas[ref.SagaSlug]; ok {
+			if s.Title != "" {
+				ref.SagaTitle = s.Title
+			}
+			for _, a := range s.Arcs {
+				if a.Slug == ref.ArcSlug {
+					if a.Title != "" {
+						ref.ArcTitle = a.Title
+					}
+					break
+				}
+			}
+		}
 	}
 
 	// sort arcs & episodes
@@ -422,9 +439,17 @@ func parseFrontmatter(path string) (Post, error) {
 	if v, _ := meta["permalink"].(string); v != "" {
 		p.Permalink = v
 	} else {
-		dir := filepath.Dir(strings.TrimPrefix(path, "content"))
-		name := strings.TrimSuffix(filepath.Base(path), ".md")
-		p.Permalink = "/" + filepath.ToSlash(filepath.Join(dir, name))
+		if rel, err := filepath.Rel("content", path); err == nil {
+			dir := filepath.Dir(rel)
+			if dir == "." {
+				dir = ""
+			}
+			name := strings.TrimSuffix(filepath.Base(rel), ".md")
+			joined := filepath.Join(dir, name)
+			p.Permalink = "/" + filepath.ToSlash(joined)
+		} else {
+			p.Permalink = "/"
+		}
 	}
 	if p.Type == "" {
 		p.Type = "Post"
