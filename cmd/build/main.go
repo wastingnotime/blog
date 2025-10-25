@@ -1,6 +1,8 @@
 package main
 
 import (
+	"bytes"
+	"encoding/xml"
 	"fmt"
 	"html/template"
 	"log"
@@ -50,6 +52,7 @@ type HomeRecent struct {
 }
 
 const homeRecentLimit = 10
+const feedItemLimit = 20
 
 // episode header payload used by templates/episode.tmpl
 // (we pass it as a map[string]any for flexibility)
@@ -362,6 +365,18 @@ func main() {
 			"templates/post.gohtml",
 		)
 	}
+
+	feedItems := collectRecent(latest, posts, feedItemLimit)
+	if len(feedItems) > feedItemLimit {
+		feedItems = feedItems[:feedItemLimit]
+	}
+	if err := writeFeed(cfg, feedItems); err != nil {
+		log.Fatalf("write feed: %v", err)
+	}
+
+	if err := writeSitemap(cfg, sagas, posts); err != nil {
+		log.Fatalf("write sitemap: %v", err)
+	}
 }
 
 // ---- utilities ----
@@ -425,7 +440,15 @@ func postOutputPath(permalink string) string {
 }
 
 func toHomeRecent(latest []*site.EpisodeRef, posts []site.Post, limit int) []HomeRecent {
-	items := make([]HomeRecent, 0, len(posts)+limit)
+	items := collectRecent(latest, posts, limit)
+	if len(items) > limit {
+		items = items[:limit]
+	}
+	return items
+}
+
+func collectRecent(latest []*site.EpisodeRef, posts []site.Post, maxEpisodes int) []HomeRecent {
+	items := make([]HomeRecent, 0, len(posts)+maxEpisodes)
 
 	for _, p := range posts {
 		items = append(items, HomeRecent{
@@ -440,8 +463,7 @@ func toHomeRecent(latest []*site.EpisodeRef, posts []site.Post, limit int) []Hom
 		})
 	}
 
-	maxEpisodes := limit
-	if len(latest) < maxEpisodes {
+	if maxEpisodes > len(latest) {
 		maxEpisodes = len(latest)
 	}
 	for i := 0; i < maxEpisodes; i++ {
@@ -465,11 +487,138 @@ func toHomeRecent(latest []*site.EpisodeRef, posts []site.Post, limit int) []Hom
 		return items[i].Date.After(items[j].Date)
 	})
 
-	if len(items) > limit {
-		items = items[:limit]
+	return items
+}
+
+type rss struct {
+	XMLName xml.Name   `xml:"rss"`
+	Version string     `xml:"version,attr"`
+	Channel rssChannel `xml:"channel"`
+}
+
+type rssChannel struct {
+	Title         string    `xml:"title"`
+	Link          string    `xml:"link"`
+	Description   string    `xml:"description,omitempty"`
+	LastBuildDate string    `xml:"lastBuildDate,omitempty"`
+	Items         []rssItem `xml:"item"`
+}
+
+type rssItem struct {
+	Title       string `xml:"title"`
+	Link        string `xml:"link"`
+	GUID        string `xml:"guid"`
+	PubDate     string `xml:"pubDate"`
+	Description string `xml:"description,omitempty"`
+}
+
+func writeFeed(cfg site.Config, items []HomeRecent) error {
+	feed := rss{Version: "2.0"}
+	feed.Channel = rssChannel{
+		Title:         "wasting no time",
+		Link:          cfg.Href("/"),
+		Description:   "Latest posts and episodes from wasting no time",
+		LastBuildDate: time.Now().UTC().Format(time.RFC1123Z),
 	}
 
-	return items
+	for _, item := range items {
+		link := cfg.Href(item.Permalink)
+		feed.Channel.Items = append(feed.Channel.Items, rssItem{
+			Title:       item.Title,
+			Link:        link,
+			GUID:        link,
+			PubDate:     item.Date.UTC().Format(time.RFC1123Z),
+			Description: item.Summary,
+		})
+	}
+
+	return writeXMLFile("public/feed.xml", feed)
+}
+
+type sitemapEntry struct {
+	Loc     string
+	LastMod time.Time
+}
+
+type sitemapURLSet struct {
+	XMLName xml.Name          `xml:"urlset"`
+	XMLNS   string            `xml:"xmlns,attr"`
+	URLs    []sitemapURLEntry `xml:"url"`
+}
+
+type sitemapURLEntry struct {
+	Loc     string `xml:"loc"`
+	LastMod string `xml:"lastmod,omitempty"`
+}
+
+func writeSitemap(cfg site.Config, sagas []*site.Saga, posts []site.Post) error {
+	entries := map[string]*sitemapEntry{}
+
+	add := func(path string, lastMod *time.Time) {
+		loc := cfg.Href(path)
+		if existing, ok := entries[loc]; ok {
+			if lastMod != nil && (existing.LastMod.IsZero() || lastMod.After(existing.LastMod)) {
+				existing.LastMod = *lastMod
+			}
+			return
+		}
+		entry := &sitemapEntry{Loc: loc}
+		if lastMod != nil {
+			entry.LastMod = *lastMod
+		}
+		entries[loc] = entry
+	}
+
+	add("/", nil)
+	add("/library/", nil)
+
+	for _, s := range sagas {
+		add(fmt.Sprintf("/sagas/%s/", s.Slug), s.LastRelease)
+		for _, a := range s.Arcs {
+			add(fmt.Sprintf("/sagas/%s/%s/", s.Slug, a.Slug), a.LastRelease)
+			for _, e := range a.Episodes {
+				t := e.Date
+				add(fmt.Sprintf("/sagas/%s/%s/%s/", s.Slug, a.Slug, e.Slug), &t)
+			}
+		}
+	}
+
+	for _, p := range posts {
+		t := p.Date
+		add(p.Permalink, &t)
+	}
+
+	list := make([]sitemapEntry, 0, len(entries))
+	for _, e := range entries {
+		list = append(list, *e)
+	}
+	sort.Slice(list, func(i, j int) bool { return list[i].Loc < list[j].Loc })
+
+	urlset := sitemapURLSet{XMLNS: "http://www.sitemaps.org/schemas/sitemap/0.9"}
+	for _, e := range list {
+		entry := sitemapURLEntry{Loc: e.Loc}
+		if !e.LastMod.IsZero() {
+			entry.LastMod = e.LastMod.UTC().Format("2006-01-02")
+		}
+		urlset.URLs = append(urlset.URLs, entry)
+	}
+
+	return writeXMLFile("public/sitemap.xml", urlset)
+}
+
+func writeXMLFile(outPath string, data any) error {
+	var buf bytes.Buffer
+	buf.WriteString(xml.Header)
+	enc := xml.NewEncoder(&buf)
+	enc.Indent("", "  ")
+	if err := enc.Encode(data); err != nil {
+		return err
+	}
+	buf.WriteByte('\n')
+	if err := os.MkdirAll(filepath.Dir(outPath), 0o755); err != nil {
+		return err
+	}
+	return os.WriteFile(outPath, buf.Bytes(), 0o644)
 }
 
 func toHomeLatest(latest []*site.EpisodeRef) []HomeEpisode {
