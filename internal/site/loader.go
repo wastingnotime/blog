@@ -58,13 +58,15 @@ type Episode struct {
 }
 
 type EpisodeRef struct {
-	Title    string
-	Slug     string
-	Number   int
-	Date     time.Time
-	Summary  string
-	ArcSlug  string
-	ArcTitle string
+	Title     string
+	Slug      string
+	Number    int
+	Date      time.Time
+	Summary   string
+	ArcSlug   string
+	ArcTitle  string
+	SagaSlug  string
+	SagaTitle string
 }
 
 type Post struct {
@@ -157,7 +159,7 @@ func Load(contentRoot string) ([]*Saga, []*EpisodeRef, error) {
 			a.Episodes = append(a.Episodes, ep)
 			s.EpisodeCount++
 
-			ref := &EpisodeRef{Title: ep.Title, Slug: ep.Slug, Number: ep.Number, Date: ep.Date, Summary: ep.Summary, ArcSlug: arcSlug, ArcTitle: a.Title}
+			ref := &EpisodeRef{Title: ep.Title, Slug: ep.Slug, Number: ep.Number, Date: ep.Date, Summary: ep.Summary, ArcSlug: arcSlug, ArcTitle: a.Title, SagaSlug: sagaSlug, SagaTitle: s.Title}
 			latest = append(latest, ref)
 
 			// last release tracking
@@ -189,7 +191,7 @@ func Load(contentRoot string) ([]*Saga, []*EpisodeRef, error) {
 			})
 			a.EpisodeCount = len(a.Episodes)
 			if a.EpisodeCount > 0 {
-				s.FirstEpisode = &EpisodeRef{Title: a.Episodes[0].Title, Slug: a.Episodes[0].Slug, Number: a.Episodes[0].Number, Date: a.Episodes[0].Date, Summary: a.Episodes[0].Summary, ArcSlug: a.Slug, ArcTitle: a.Title}
+				s.FirstEpisode = &EpisodeRef{Title: a.Episodes[0].Title, Slug: a.Episodes[0].Slug, Number: a.Episodes[0].Number, Date: a.Episodes[0].Date, Summary: a.Episodes[0].Summary, ArcSlug: a.Slug, ArcTitle: a.Title, SagaSlug: s.Slug, SagaTitle: s.Title}
 			}
 		}
 		s.Status = SagaStatus(s.LastRelease)
@@ -249,6 +251,12 @@ func collectPosts(contentDir string) ([]Post, error) {
 }
 
 func BuildRecent(contentDir string, limit int) ([]Post, error) {
+	if _, err := os.Stat(contentDir); err != nil {
+		if os.IsNotExist(err) {
+			return []Post{}, nil
+		}
+		return nil, err
+	}
 	all, err := collectPosts(contentDir)
 	if err != nil {
 		return nil, err
@@ -372,17 +380,59 @@ func parseFrontmatter(path string) (Post, error) {
 		return Post{}, fmt.Errorf("no closing --- in %s", path)
 	}
 	fm := content[3 : end+3]
-	var p Post
-	if err := yaml.Unmarshal([]byte(fm), &p); err != nil {
+	var meta map[string]any
+	if err := yaml.Unmarshal([]byte(fm), &meta); err != nil {
 		return Post{}, err
 	}
 
+	var p Post
+	if v, _ := meta["title"].(string); v != "" {
+		p.Title = v
+	}
+	if v, _ := meta["saga"].(string); v != "" {
+		p.Saga = v
+	}
+	if v, _ := meta["arc"].(string); v != "" {
+		p.Arc = v
+	}
+	if v, _ := meta["type"].(string); v != "" {
+		p.Type = v
+	}
+	if v, _ := meta["studio"].(string); v != "" {
+		p.Studio = v
+	}
+	if v, _ := meta["summary"].(string); v != "" {
+		p.Summary = v
+	}
+	if v, ok := meta["tags"].([]any); ok && len(v) > 0 {
+		p.Tags = toStrings(v)
+	}
+	switch v := meta["date"].(type) {
+	case string:
+		if t, err := time.Parse(time.RFC3339, v); err == nil {
+			p.Date = t
+		} else if t, err := time.Parse("2006-01-02", v); err == nil {
+			p.Date = t
+		}
+	case time.Time:
+		p.Date = v
+	}
+
 	// Compute permalink
-	dir := filepath.Dir(strings.TrimPrefix(path, "content"))
-	name := strings.TrimSuffix(filepath.Base(path), ".md")
-	p.Permalink = "/" + filepath.ToSlash(filepath.Join(dir, name))
+	if v, _ := meta["permalink"].(string); v != "" {
+		p.Permalink = v
+	} else {
+		dir := filepath.Dir(strings.TrimPrefix(path, "content"))
+		name := strings.TrimSuffix(filepath.Base(path), ".md")
+		p.Permalink = "/" + filepath.ToSlash(filepath.Join(dir, name))
+	}
 	if p.Type == "" {
 		p.Type = "Post"
+	}
+	if p.Date.IsZero() {
+		if info, err := os.Stat(path); err == nil {
+			p.Date = info.ModTime()
+		}
 	}
 	return p, nil
 }

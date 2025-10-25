@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"html/template"
 	"log"
 	"os"
@@ -35,6 +36,19 @@ type HomeEpisode struct {
 	ArcTitle  string
 	ArcEmoji  string
 }
+
+type HomeRecent struct {
+	Title     string
+	Summary   string
+	Date      time.Time
+	Type      string
+	Saga      string
+	Arc       string
+	Permalink string
+	Tags      []string
+}
+
+const homeRecentLimit = 10
 
 // episode header payload used by templates/episode.tmpl
 // (we pass it as a map[string]any for flexibility)
@@ -71,12 +85,18 @@ func main() {
 		log.Fatalf("load: %v", err)
 	}
 
+	recentPosts, err := site.BuildRecent(filepath.Join("content", "posts"), homeRecentLimit)
+	if err != nil {
+		log.Fatalf("recent posts: %v", err)
+	}
+
 	base := loadBase(cfg)
 
 	// 2) Render Home
 	homeData := map[string]any{
 		"Sagas":          toHomeSagas(sagas),
 		"LatestEpisodes": toHomeLatest(latest),
+		"RecentPosts":    toHomeRecent(latest, recentPosts, homeRecentLimit),
 		"NowYear":        time.Now().Year(),
 	}
 
@@ -131,7 +151,7 @@ func main() {
 		var timeline []*site.EpisodeRef
 		for _, a := range s.Arcs {
 			for _, e := range a.Episodes {
-				ref := &site.EpisodeRef{Title: e.Title, Slug: e.Slug, Number: e.Number, Date: e.Date, Summary: e.Summary, ArcSlug: a.Slug, ArcTitle: a.Title}
+				ref := &site.EpisodeRef{Title: e.Title, Slug: e.Slug, Number: e.Number, Date: e.Date, Summary: e.Summary, ArcSlug: a.Slug, ArcTitle: a.Title, SagaSlug: s.Slug, SagaTitle: s.Title}
 				timeline = append(timeline, ref)
 			}
 		}
@@ -159,7 +179,7 @@ func main() {
 			latestFromArc := lastNEpisodes(currentArc, 3)
 			refs := make([]*site.EpisodeRef, 0, len(latestFromArc))
 			for _, e := range latestFromArc {
-				refs = append(refs, &site.EpisodeRef{Title: e.Title, Slug: e.Slug, Number: e.Number, Date: e.Date, Summary: e.Summary, ArcSlug: currentArc.Slug, ArcTitle: currentArc.Title})
+				refs = append(refs, &site.EpisodeRef{Title: e.Title, Slug: e.Slug, Number: e.Number, Date: e.Date, Summary: e.Summary, ArcSlug: currentArc.Slug, ArcTitle: currentArc.Title, SagaSlug: s.Slug, SagaTitle: s.Title})
 			}
 			currentArcData = map[string]any{
 				"Title":          currentArc.Title,
@@ -236,7 +256,7 @@ func main() {
 			// Episodes list for arc (refs)
 			epRefs := make([]*site.EpisodeRef, 0, len(a.Episodes))
 			for _, e := range a.Episodes {
-				epRefs = append(epRefs, &site.EpisodeRef{Title: e.Title, Slug: e.Slug, Number: e.Number, Date: e.Date, Summary: e.Summary})
+				epRefs = append(epRefs, &site.EpisodeRef{Title: e.Title, Slug: e.Slug, Number: e.Number, Date: e.Date, Summary: e.Summary, ArcSlug: a.Slug, ArcTitle: a.Title, SagaSlug: s.Slug, SagaTitle: s.Title})
 			}
 
 			var firstArcEp, latestArcEp *site.EpisodeRef
@@ -364,6 +384,54 @@ func toHomeSagas(sagas []*site.Saga) []HomeSaga {
 	return out
 }
 
+func toHomeRecent(latest []*site.EpisodeRef, posts []site.Post, limit int) []HomeRecent {
+	items := make([]HomeRecent, 0, len(posts)+limit)
+
+	for _, p := range posts {
+		items = append(items, HomeRecent{
+			Title:     p.Title,
+			Summary:   p.Summary,
+			Date:      p.Date,
+			Type:      p.Type,
+			Saga:      p.Saga,
+			Arc:       p.Arc,
+			Permalink: p.Permalink,
+			Tags:      p.Tags,
+		})
+	}
+
+	maxEpisodes := limit
+	if len(latest) < maxEpisodes {
+		maxEpisodes = len(latest)
+	}
+	for i := 0; i < maxEpisodes; i++ {
+		ref := latest[i]
+		perm := fmt.Sprintf("/sagas/%s/%s/%s/", ref.SagaSlug, ref.ArcSlug, ref.Slug)
+		items = append(items, HomeRecent{
+			Title:     ref.Title,
+			Summary:   ref.Summary,
+			Date:      ref.Date,
+			Type:      "Episode",
+			Saga:      ref.SagaTitle,
+			Arc:       ref.ArcTitle,
+			Permalink: perm,
+		})
+	}
+
+	sort.SliceStable(items, func(i, j int) bool {
+		if items[i].Date.Equal(items[j].Date) {
+			return items[i].Title < items[j].Title
+		}
+		return items[i].Date.After(items[j].Date)
+	})
+
+	if len(items) > limit {
+		items = items[:limit]
+	}
+
+	return items
+}
+
 func toHomeLatest(latest []*site.EpisodeRef) []HomeEpisode {
 	max1 := 6
 	if len(latest) < max1 {
@@ -378,8 +446,8 @@ func toHomeLatest(latest []*site.EpisodeRef) []HomeEpisode {
 			Number:    ref.Number,
 			Date:      ref.Date,
 			Summary:   ref.Summary,
-			SagaTitle: findSagaTitle(latest, ref), // optional; not strictly available here—override below if needed
-			SagaSlug:  findSagaSlug(latest, ref),  // optional; not strictly available here—override below if needed
+			SagaTitle: ref.SagaTitle,
+			SagaSlug:  ref.SagaSlug,
 			ArcSlug:   ref.ArcSlug,
 			ArcTitle:  ref.ArcTitle,
 			ArcEmoji:  "⚙️",
@@ -395,14 +463,4 @@ func lastNEpisodes(a *site.Arc, n int) []*site.Episode {
 	// episodes already sorted oldest→newest; take tail
 	start := len(a.Episodes) - n
 	return a.Episodes[start:]
-}
-
-func findSagaSlug(_ []*site.EpisodeRef, _ *site.EpisodeRef) string {
-	// If you need this mapping, pass SagaSlug through EpisodeRef in loader.
-	return ""
-}
-
-func findSagaTitle(_ []*site.EpisodeRef, _ *site.EpisodeRef) string {
-	// If you need this mapping, pass SagaSlug through EpisodeRef in loader.
-	return ""
 }
