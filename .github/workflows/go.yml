@@ -43,10 +43,13 @@ jobs:
         go mod tidy
         go build ./cmd/build
 
+    - name: validate content
+      run: go run ./cmd/migrate check
+
     - name: execute generator
       env:
         BASE_PATH: /blog/
-        SITE_BASE_URL: http://localhost:8080/
+        SITE_BASE_URL: https://wastingnotime.github.io/
       run: ./build
 
     - name: upload artifacts
