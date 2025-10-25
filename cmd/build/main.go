@@ -176,15 +176,12 @@ func main() {
 	base := loadBase(cfg)
 	nowYear := time.Now().Year()
 
-	libraryPage, err := site.LoadPage(filepath.Join("content", "library", "index.md"))
-	if err != nil {
-		log.Fatalf("load library page: %v", err)
-	}
-
 	aboutPage, err := site.LoadPage(filepath.Join("content", "about", "index.md"))
 	if err != nil {
 		log.Fatalf("load about page: %v", err)
 	}
+
+	tagIndex, libraryTags := site.BuildTagIndex(sagas, posts)
 
 	// 2) Render Home
 	homeData := map[string]any{
@@ -203,19 +200,31 @@ func main() {
 	)
 
 	// 3) Render Library
-	libData := map[string]any{
-		"Page":    libraryPage,
-		"Sagas":   sagas,
-		"Query":   "",
-		"NowYear": nowYear,
+	libraryData := site.LibraryIndexData{
+		Tags:    libraryTags,
+		NowYear: nowYear,
 	}
-	//write(t, "library", "public/library/index.html", libData)
+
 	renderView(base,
-		"library",
+		"library_index",
 		"public/library/index.html",
-		libData,
-		"templates/library.gohtml",
+		libraryData,
+		"templates/library_index.gohtml",
 	)
+
+	for _, tag := range libraryTags {
+		pageData := site.TagPageData{
+			Tag:     tag.Name,
+			Posts:   tagIndex[tag.Name],
+			NowYear: nowYear,
+		}
+		renderView(base,
+			"tag",
+			filepath.Join("public", "library", tag.Slug, "index.html"),
+			pageData,
+			"templates/tag.gohtml",
+		)
+	}
 
 	aboutData := map[string]any{
 		"Page":    aboutPage,
