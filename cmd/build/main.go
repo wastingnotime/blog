@@ -13,6 +13,8 @@ import (
 	"sort"
 	"strings"
 	"time"
+	"unicode"
+	"unicode/utf8"
 
 	"github.com/wastingnotime/blog/internal/site"
 )
@@ -558,7 +560,7 @@ func collectRecent(latest []*site.EpisodeRef, posts []site.Post, maxEpisodes int
 			Title:     p.Title,
 			Summary:   p.Summary,
 			Date:      p.Date,
-			Type:      p.Type, //TODO: ensure capitalization
+			Type:      capitalizeType(p.Type),
 			Saga:      p.Saga,
 			Arc:       p.Arc,
 			Permalink: p.Permalink,
@@ -591,6 +593,20 @@ func collectRecent(latest []*site.EpisodeRef, posts []site.Post, maxEpisodes int
 	})
 
 	return items
+}
+
+func capitalizeType(t string) string {
+	trimmed := strings.TrimSpace(t)
+	if trimmed == "" {
+		return ""
+	}
+
+	r, size := utf8.DecodeRuneInString(trimmed)
+	if r == utf8.RuneError && size <= 1 {
+		return strings.ToUpper(trimmed)
+	}
+
+	return string(unicode.ToUpper(r)) + trimmed[size:]
 }
 
 type rss struct {
