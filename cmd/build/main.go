@@ -52,6 +52,13 @@ type HomeRecent struct {
 	Tags      []string
 }
 
+type SagaSummary struct {
+	Title       string
+	Description template.HTML
+	SagaURL     string
+	StartURL    string
+}
+
 const homeRecentLimit = 10
 const feedItemLimit = 20
 
@@ -80,6 +87,61 @@ func renderView(base *template.Template, viewName string, outPath string, data a
 	}
 }
 
+func buildSagaSummaries(contentRoot string, sagas []*site.Saga) ([]SagaSummary, error) {
+	summaries := make([]SagaSummary, 0, len(sagas))
+	for _, saga := range sagas {
+		pagePath := filepath.Join(contentRoot, "sagas", saga.Slug, "index.md")
+		page, err := site.LoadPage(pagePath)
+		if err != nil {
+			return nil, fmt.Errorf("load saga index %s: %w", saga.Slug, err)
+		}
+
+		summary := SagaSummary{
+			Title:       page.Title,
+			Description: page.Body,
+			SagaURL:     fmt.Sprintf("/sagas/%s/", saga.Slug),
+		}
+
+		if summary.Title == "" {
+			summary.Title = saga.Title
+		}
+
+		if len(summary.Description) == 0 && saga.Summary != "" {
+			escaped := template.HTMLEscapeString(saga.Summary)
+			summary.Description = template.HTML("<p>" + escaped + "</p>")
+		}
+
+		startURL, err := firstArcPermalink(contentRoot, saga.Slug)
+		if err != nil {
+			return nil, fmt.Errorf("find first arc for %s: %w", saga.Slug, err)
+		}
+		summary.StartURL = startURL
+
+		summaries = append(summaries, summary)
+	}
+	return summaries, nil
+}
+
+func firstArcPermalink(contentRoot, sagaSlug string) (string, error) {
+	sagaDir := filepath.Join(contentRoot, "sagas", sagaSlug)
+	entries, err := os.ReadDir(sagaDir)
+	if err != nil {
+		return "", err
+	}
+	for _, entry := range entries {
+		if !entry.IsDir() {
+			continue
+		}
+		arcIndex := filepath.Join(sagaDir, entry.Name(), "index.md")
+		if _, err := os.Stat(arcIndex); err == nil {
+			return fmt.Sprintf("/sagas/%s/%s/", sagaSlug, entry.Name()), nil
+		} else if !os.IsNotExist(err) {
+			return "", err
+		}
+	}
+	return "", nil
+}
+
 // ---- main ----
 
 func main() {
@@ -88,6 +150,11 @@ func main() {
 	sagas, latest, err := site.Load("content")
 	if err != nil {
 		log.Fatalf("load: %v", err)
+	}
+
+	sagaSummaries, err := buildSagaSummaries("content", sagas)
+	if err != nil {
+		log.Fatalf("build saga summaries: %v", err)
 	}
 
 	posts, err := site.LoadPosts(filepath.Join("content", "posts"))
@@ -153,6 +220,18 @@ func main() {
 		"public/about/index.html",
 		aboutData,
 		"templates/about.gohtml",
+	)
+
+	sagasData := map[string]any{
+		"SagaSummaries": sagaSummaries,
+		"NowYear":       nowYear,
+	}
+
+	renderView(base,
+		"sagas",
+		"public/sagas/index.html",
+		sagasData,
+		"templates/sagas.gohtml",
 	)
 
 	// 5) Render all Saga pages, Arc pages, and Episode pages
