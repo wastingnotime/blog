@@ -21,11 +21,21 @@ Expected data passed from builder:
 
 {{ define "content" }}
 <!-- Search (optional; wire query param) -->
-<form action="{{ href "/library" }}" method="get" class="mb-4 flex gap-2 text-sm">
+<form id="library-search" action="{{ href "/library" }}" method="get" class="mb-4 flex gap-2 text-sm">
     <input name="q" value="{{ .Query }}" placeholder="search title or tag"
            class="flex-1 bg-zinc-900 text-zinc-100 placeholder:text-zinc-500 border border-zinc-800 rounded px-2 py-1 focus:outline-none focus:border-white/40" />
     <button class="px-3 py-1 border border-zinc-800 rounded hover:border-white/40">Search</button>
 </form>
+
+<section id="search-empty" class="text-xs text-zinc-500 mb-6">
+    Type a few characters to search saga, arc, or episode titles and tags.
+</section>
+
+<section id="search-results" class="hidden mb-8">
+    <h2 class="text-sm text-zinc-400 mb-2">SEARCH RESULTS</h2>
+    <ul id="search-results-list" class="space-y-2"></ul>
+    <div id="search-results-empty" class="hidden text-xs text-zinc-500">No matches yet — try a different keyword.</div>
+</section>
 
 <!-- Sagas → Arcs → Episodes (expandable with <details>) -->
 <section>
@@ -71,4 +81,145 @@ Expected data passed from builder:
         {{ end }}
     </ul>
 </section>
+
+<script>
+(function() {
+    const form = document.getElementById('library-search');
+    if (!form) {
+        return;
+    }
+
+    const input = form.querySelector('input[name="q"]');
+    const resultsSection = document.getElementById('search-results');
+    const resultsList = document.getElementById('search-results-list');
+    const emptyMessage = document.getElementById('search-empty');
+    const noResultsMessage = document.getElementById('search-results-empty');
+    let index = [];
+
+    form.addEventListener('submit', function(evt) {
+        evt.preventDefault();
+        input.focus();
+    });
+
+    function normalise(value) {
+        return (value || '').toLowerCase();
+    }
+
+    function render(query) {
+        const q = normalise(query).trim();
+        if (!q) {
+            resultsSection.classList.add('hidden');
+            resultsList.innerHTML = '';
+            noResultsMessage.classList.add('hidden');
+            if (emptyMessage) {
+                emptyMessage.classList.remove('hidden');
+            }
+            return;
+        }
+
+        const matches = index.filter(function(entry) {
+            if (!entry.title) {
+                return false;
+            }
+            const title = normalise(entry.title);
+            if (title.includes(q)) {
+                return true;
+            }
+            if (Array.isArray(entry.tags)) {
+                for (let i = 0; i < entry.tags.length; i++) {
+                    if (normalise(entry.tags[i]).includes(q)) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        });
+
+        resultsList.innerHTML = '';
+        if (matches.length === 0) {
+            noResultsMessage.classList.remove('hidden');
+        } else {
+            noResultsMessage.classList.add('hidden');
+            matches.slice(0, 50).forEach(function(entry) {
+                const li = document.createElement('li');
+                li.className = 'border border-zinc-800 rounded p-2 hover:border-white/30 transition-colors';
+
+                const link = document.createElement('a');
+                link.href = entry.url;
+                link.className = 'block text-sm text-white hover:underline';
+                const typeLabel = entry.type ? entry.type.charAt(0).toUpperCase() + entry.type.slice(1) : '';
+                link.textContent = (typeLabel ? '[' + typeLabel + '] ' : '') + entry.title;
+                li.appendChild(link);
+
+                if (entry.context) {
+                    const context = document.createElement('div');
+                    context.className = 'text-xs text-zinc-500';
+                    context.textContent = entry.context;
+                    li.appendChild(context);
+                }
+
+                if (entry.summary) {
+                    const summary = document.createElement('div');
+                    summary.className = 'text-xs text-zinc-400 mt-1';
+                    summary.textContent = entry.summary;
+                    li.appendChild(summary);
+                }
+
+                if (entry.tags && entry.tags.length) {
+                    const tags = document.createElement('div');
+                    tags.className = 'text-xs text-zinc-500 mt-1';
+                    tags.textContent = '#' + entry.tags.map(function(tag) { return tag.toLowerCase(); }).join(' #');
+                    li.appendChild(tags);
+                }
+
+                if (entry.date) {
+                    const date = document.createElement('div');
+                    date.className = 'text-xs text-zinc-600 mt-1';
+                    date.textContent = entry.date;
+                    li.appendChild(date);
+                }
+
+                resultsList.appendChild(li);
+            });
+        }
+
+        resultsSection.classList.remove('hidden');
+        if (emptyMessage) {
+            emptyMessage.classList.add('hidden');
+        }
+    }
+
+    function loadIndex() {
+        if (index.length > 0) {
+            return Promise.resolve();
+        }
+        return fetch('{{ href "/search.json" }}')
+            .then(function(resp) { return resp.json(); })
+            .then(function(data) {
+                if (Array.isArray(data)) {
+                    index = data;
+                }
+            })
+            .catch(function() {
+                if (emptyMessage) {
+                    emptyMessage.textContent = 'Search index unavailable.';
+                }
+            });
+    }
+
+    input.addEventListener('input', function(evt) {
+        loadIndex().then(function() {
+            render(evt.target.value);
+        });
+    });
+
+    const initial = new URLSearchParams(window.location.search).get('q') || input.value;
+    if (initial) {
+        input.value = initial;
+        loadIndex().then(function() {
+            render(initial);
+        });
+    }
+})();
+</script>
 {{ end }}
