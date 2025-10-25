@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"encoding/xml"
+	"errors"
 	"fmt"
 	"html/template"
 	"log"
@@ -93,13 +94,19 @@ func buildSagaSummaries(contentRoot string, sagas []*site.Saga) ([]SagaSummary, 
 		pagePath := filepath.Join(contentRoot, "sagas", saga.Slug, "index.md")
 		page, err := site.LoadPage(pagePath)
 		if err != nil {
-			return nil, fmt.Errorf("load saga index %s: %w", saga.Slug, err)
+			if !errors.Is(err, os.ErrNotExist) {
+				return nil, fmt.Errorf("load saga index %s: %w", saga.Slug, err)
+			}
+			page = nil
 		}
 
 		summary := SagaSummary{
-			Title:       page.Title,
-			Description: page.Body,
-			SagaURL:     fmt.Sprintf("/sagas/%s/", saga.Slug),
+			SagaURL: fmt.Sprintf("/sagas/%s/", saga.Slug),
+		}
+
+		if page != nil {
+			summary.Title = page.Title
+			summary.Description = page.Body
 		}
 
 		if summary.Title == "" {
