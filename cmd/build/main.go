@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"encoding/json"
 	"encoding/xml"
 	"fmt"
 	"html/template"
@@ -377,6 +378,10 @@ func main() {
 	if err := writeSitemap(cfg, sagas, posts); err != nil {
 		log.Fatalf("write sitemap: %v", err)
 	}
+
+	if err := writeSearchIndex(cfg, sagas); err != nil {
+		log.Fatalf("write search index: %v", err)
+	}
 }
 
 // ---- utilities ----
@@ -655,4 +660,86 @@ func lastNEpisodes(a *site.Arc, n int) []*site.Episode {
 	// episodes already sorted oldest→newest; take tail
 	start := len(a.Episodes) - n
 	return a.Episodes[start:]
+}
+
+type searchEntry struct {
+	Title   string   `json:"title"`
+	URL     string   `json:"url"`
+	Type    string   `json:"type"`
+	Summary string   `json:"summary,omitempty"`
+	Tags    []string `json:"tags,omitempty"`
+	Context string   `json:"context,omitempty"`
+	Date    string   `json:"date,omitempty"`
+}
+
+func writeSearchIndex(cfg site.Config, sagas []*site.Saga) error {
+	entries := make([]searchEntry, 0)
+
+	add := func(entry searchEntry) {
+		entries = append(entries, entry)
+	}
+
+	for _, s := range sagas {
+		add(searchEntry{
+			Title:   s.Title,
+			URL:     cfg.Href(fmt.Sprintf("/sagas/%s/", s.Slug)),
+			Type:    "saga",
+			Summary: s.Summary,
+			Tags:    uniqueStrings(append([]string{}, s.Tags...)),
+		})
+
+		for _, a := range s.Arcs {
+			add(searchEntry{
+				Title:   a.Title,
+				URL:     cfg.Href(fmt.Sprintf("/sagas/%s/%s/", s.Slug, a.Slug)),
+				Type:    "arc",
+				Summary: a.Summary,
+				Context: s.Title,
+				Tags:    uniqueStrings(append([]string{}, s.Tags...)),
+			})
+
+			for _, e := range a.Episodes {
+				entry := searchEntry{
+					Title:   e.Title,
+					URL:     cfg.Href(fmt.Sprintf("/sagas/%s/%s/%s/", s.Slug, a.Slug, e.Slug)),
+					Type:    "episode",
+					Tags:    uniqueStrings(append(append([]string{}, e.Tags...), s.Tags...)),
+					Context: fmt.Sprintf("%s · %s", s.Title, a.Title),
+				}
+				if !e.Date.IsZero() {
+					entry.Date = e.Date.Format("2006-01-02")
+				}
+				if e.Summary != "" {
+					entry.Summary = e.Summary
+				}
+				add(entry)
+			}
+		}
+	}
+
+	data, err := json.Marshal(entries)
+	if err != nil {
+		return err
+	}
+	if err := os.MkdirAll("public", 0o755); err != nil {
+		return err
+	}
+	return os.WriteFile(filepath.Join("public", "search.json"), data, 0o644)
+}
+
+func uniqueStrings(values []string) []string {
+	seen := make(map[string]struct{}, len(values))
+	out := make([]string, 0, len(values))
+	for _, v := range values {
+		if v == "" {
+			continue
+		}
+		key := strings.ToLower(v)
+		if _, ok := seen[key]; ok {
+			continue
+		}
+		seen[key] = struct{}{}
+		out = append(out, v)
+	}
+	return out
 }
