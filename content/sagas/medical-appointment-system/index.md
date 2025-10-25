@@ -4,7 +4,7 @@ type: "saga"
 studio: "CodingZen"
 status: "in progress"
 summary: "Designing and shipping a scheduling system for small clinics, from first pain point to working software."
-date: 2025-10-20
+date: "2025-10-20"
 tags: ["healthcare", "appointments", "architecture"]
 ---
 

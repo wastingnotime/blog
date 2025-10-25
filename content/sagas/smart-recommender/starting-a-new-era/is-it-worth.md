@@ -4,7 +4,7 @@ type: "episode"
 saga: "Smart Recommender"
 arc: "Starting a New Era"
 studio: "Experiments"
-date: 2025-10-25
+date: "2025-10-25"
 summary: "Does this idea deserve time, or is it just intellectually shiny?"
 tags: ["focus", "opportunity-cost", "strategy"]
 ---

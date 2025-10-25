@@ -4,7 +4,7 @@ type: "episode"
 saga: "Smart Recommender"
 arc: "Starting a New Era"
 studio: "Experiments"
-date: 2025-10-24
+date: "2025-10-24"
 summary: "Who actually benefits enough to justify money, and is it a subscription, a license, or consulting?"
 tags: ["pricing", "business-model", "saas"]
 ---

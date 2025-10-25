@@ -4,7 +4,7 @@ type: "episode"
 saga: "Medical Appointment System"
 arc: "Building"
 studio: "CodingZen"
-date: 2025-10-24
+date: "2025-10-24"
 summary: "First runnable version: Go API + scheduling core + basic audit."
 tags: ["go", "api", "healthcare"]
 ---
