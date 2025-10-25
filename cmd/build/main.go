@@ -571,7 +571,7 @@ func collectRecent(latest []*site.EpisodeRef, posts []site.Post, maxEpisodes int
 			Title:     p.Title,
 			Summary:   p.Summary,
 			Date:      p.Date,
-			Type:      p.Type,
+			Type:      p.Type, //TODO: ensure capitalization
 			Saga:      p.Saga,
 			Arc:       p.Arc,
 			Permalink: p.Permalink,
