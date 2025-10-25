@@ -379,13 +379,6 @@ func main() {
 				nextArc = s.Arcs[ai+1]
 			}
 
-			arcLite := func(x *site.Arc) map[string]any {
-				if x == nil {
-					return nil
-				}
-				return map[string]any{"Title": x.Title, "Slug": x.Slug}
-			}
-
 			// Episodes list for arc (refs)
 			epRefs := make([]*site.EpisodeRef, 0, len(a.Episodes))
 			for _, e := range a.Episodes {
@@ -398,23 +391,26 @@ func main() {
 				latestArcEp = epRefs[len(epRefs)-1]
 			}
 
-			arcHero := map[string]any{"Title": a.Title, "Slug": a.Slug, "Summary": a.Summary, "Emoji": a.Emoji}
-			var lastRel time.Time
-			if a.LastRelease != nil {
-				lastRel = *a.LastRelease
+			arcLink := func(x *site.Arc) *site.ArcLink {
+				if x == nil {
+					return nil
+				}
+				return &site.ArcLink{Title: x.Title, URL: fmt.Sprintf("/sagas/%s/%s/", s.Slug, x.Slug)}
 			}
 
-			arcData := map[string]any{
-				"Section":       "sagas",
-				"Saga":          map[string]any{"Title": s.Title, "Slug": s.Slug},
-				"Arc":           arcHero,
-				"Episodes":      epRefs,
-				"FirstEpisode":  firstArcEp,
-				"LatestEpisode": latestArcEp,
-				"PrevArc":       arcLite(prevArc),
-				"NextArc":       arcLite(nextArc),
-				"LastRelease":   lastRel,
-				"NowYear":       time.Now().Year(),
+			arcData := site.ArcPageData{
+				Section:       "sagas",
+				NowYear:       time.Now().Year(),
+				SagaTitle:     s.Title,
+				SagaURL:       fmt.Sprintf("/sagas/%s/", s.Slug),
+				ArcTitle:      a.Title,
+				ArcSummary:    a.Summary,
+				Episodes:      epRefs,
+				FirstEpisode:  firstArcEp,
+				LatestEpisode: latestArcEp,
+				PrevArc:       arcLink(prevArc),
+				NextArc:       arcLink(nextArc),
+				LastRelease:   a.LastRelease,
 			}
 
 			renderView(base,
@@ -434,38 +430,29 @@ func main() {
 					nextEp = a.Episodes[ei+1]
 				}
 
-				// Episode header payload
-				eh := map[string]any{
-					"SagaTitle":   s.Title,
-					"ArcTitle":    a.Title,
-					"Number":      e.Number,
-					"Title":       e.Title,
-					"Subtitle":    e.Summary,
-					"Author":      "Henrique Riccio",
-					"Date":        e.Date,
-					"ReadingTime": e.ReadingTime,
-					"SagaSlug":    s.Slug,
-					"ArcSlug":     a.Slug,
-					"Recap":       "", // optional: pull from previous episode summary if you like
+				episodeLink := func(ep *site.Episode) *site.EpisodeLink {
+					if ep == nil {
+						return nil
+					}
+					return &site.EpisodeLink{Title: ep.Title, URL: fmt.Sprintf("/sagas/%s/%s/%s/", s.Slug, a.Slug, ep.Slug), Number: ep.Number}
 				}
 
-				var prevRef, nextRef map[string]any
-				if prevEp != nil {
-					prevRef = map[string]any{"Title": prevEp.Title, "Slug": prevEp.Slug, "Number": prevEp.Number}
-				}
-				if nextEp != nil {
-					nextRef = map[string]any{"Title": nextEp.Title, "Slug": nextEp.Slug, "Number": nextEp.Number}
-				}
-
-				episodeData := map[string]any{
-					"Section":       "sagas",
-					"EpisodeHeader": eh,
-					"EpisodeHTML":   e.BodyHTML, // already safe via goldmark
-					"Prev":          prevRef,
-					"Next":          nextRef,
-					"Saga":          map[string]any{"Title": s.Title, "Slug": s.Slug},
-					"Arc":           map[string]any{"Title": a.Title, "Slug": a.Slug},
-					"NowYear":       time.Now().Year(),
+				episodeData := site.EpisodePageData{
+					Section:            "sagas",
+					NowYear:            time.Now().Year(),
+					SagaTitle:          s.Title,
+					SagaURL:            fmt.Sprintf("/sagas/%s/", s.Slug),
+					ArcTitle:           a.Title,
+					ArcURL:             fmt.Sprintf("/sagas/%s/%s/", s.Slug, a.Slug),
+					EpisodeTitle:       e.Title,
+					EpisodeNumber:      e.Number,
+					EpisodeSummary:     e.Summary,
+					EpisodeAuthor:      "Henrique Riccio",
+					EpisodeDate:        e.Date,
+					EpisodeReadingTime: e.ReadingTime,
+					EpisodeBody:        e.BodyHTML,
+					PrevEpisode:        episodeLink(prevEp),
+					NextEpisode:        episodeLink(nextEp),
 				}
 
 				renderView(base,
