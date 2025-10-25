@@ -7,20 +7,39 @@
     <title>{{ block "title" . }}wasting no time{{ end }}</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>tailwind.config={theme:{extend:{fontFamily:{mono:["ui-monospace","SFMono-Regular","Menlo","Monaco","Consolas","Liberation Mono","Courier New","monospace"]}}}};</script>
-    <style>html{font-kerning:normal}</style>
+    <style>
+        html{font-kerning:normal}
+        .menu a{
+            color:#a1a1aa;
+            text-decoration:none
+        }
+        .menu a:hover{
+            color:#d4d4d8
+        }
+        .menu a.active{
+            color:#fff;
+            font-weight:500
+        }
+        .menu a.active::after{
+            content:"•";
+            margin-left:0.4em;
+            opacity:0.6;
+            font-weight:400
+        }
+    </style>
 </head>
 <body class="bg-black text-zinc-100 font-mono selection:bg-white/20">
 <div class="max-w-3xl mx-auto px-4 py-6">
     <!-- TOP NAV -->
     <header class="mb-6">
-        <nav class="text-sm text-zinc-400">
-            <a class="hover:text-white" href="{{ href "/" }}">HOME</a>
+        <nav class="menu text-sm text-zinc-400">
+            <a class="hover:text-white{{ if eq .Section "home" }} active{{ end }}" href="{{ href "/" }}">HOME</a>
             <span class="mx-2">/</span>
-            <a class="hover:text-white" href="{{ href "/sagas" }}">SAGAS</a>
+            <a class="hover:text-white{{ if eq .Section "sagas" }} active{{ end }}" href="{{ href "/sagas" }}">SAGAS</a>
             <span class="mx-2">/</span>
-            <a class="hover:text-white" href="{{ href "/library" }}">LIBRARY</a>
+            <a class="hover:text-white{{ if eq .Section "library" }} active{{ end }}" href="{{ href "/library" }}">LIBRARY</a>
             <span class="mx-2">/</span>
-            <a class="hover:text-white" href="{{ href "/about" }}">ABOUT</a>
+            <a class="hover:text-white{{ if eq .Section "about" }} active{{ end }}" href="{{ href "/about" }}">ABOUT</a>
             <span class="mx-2">/</span>
             <a class="hover:text-white" href="{{ href "/feed.xml" }}">RSS</a>
         </nav>

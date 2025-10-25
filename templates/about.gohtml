@@ -2,8 +2,7 @@
     {{ template "base" . }}
 {{ end }}
 
-{{ define "title" }}{{ if .Page }}{{ .Page.Title }} — wasting no time{{ else }}About — wasting no time{{ end }}{{ end }}
-{{ define "h1" }}{{ if .Page }}{{ .Page.Title }}{{ else }}About{{ end }}{{ end }}
+{{ define "title" }}{{ if .Page }}{{ .Page.Title }} — wasting no time{{ else }}about — wasting no time{{ end }}{{ end }}
 
 {{ define "content" }}
     {{ if .Page }}
