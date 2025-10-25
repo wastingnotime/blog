@@ -1,0 +1,31 @@
+{{ define "tag" }}
+    {{ template "base" . }}
+{{ end }}
+
+{{ define "title" }}{{ .Tag }} — library{{ end }}
+{{ define "h1" }}#{{ .Tag }}{{ end }}
+
+{{ define "content" }}
+    <section class="space-y-4">
+        {{ if .Posts }}
+        <ul class="space-y-4">
+            {{ range .Posts }}
+            <li class="border border-zinc-800 rounded p-3 hover:border-white/30 transition-colors">
+                <div class="flex flex-col gap-1">
+                    <div class="text-xs text-zinc-500">{{ .Date.Format "2006-01-02" }}</div>
+                    <a class="text-white hover:underline" href="{{ href .Permalink }}">{{ .Title }}</a>
+                    {{ if .Saga }}
+                    <div class="text-xs text-zinc-500">{{ .Saga }}{{ if .Arc }} / {{ .Arc }}{{ end }} —</div>
+                    {{ end }}
+                    {{ if .Summary }}
+                    <p class="text-sm text-zinc-400">{{ .Summary }}</p>
+                    {{ end }}
+                </div>
+            </li>
+            {{ end }}
+        </ul>
+        {{ else }}
+        <p class="text-sm text-zinc-500">No entries tagged with {{ .Tag }} yet.</p>
+        {{ end }}
+    </section>
+{{ end }}
