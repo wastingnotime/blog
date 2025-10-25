@@ -3,6 +3,7 @@ title: "Medical Appointment System"
 type: "saga"
 studio: "CodingZen"
 status: "in progress"
+order: 1
 summary: "Designing and shipping a scheduling system for small clinics, from first pain point to working software."
 date: "2025-10-20"
 tags: ["healthcare", "appointments", "architecture"]

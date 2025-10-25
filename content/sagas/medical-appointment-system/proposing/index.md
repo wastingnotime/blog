@@ -4,6 +4,7 @@ type: "arc"
 saga: "Medical Appointment System"
 arc: "Proposing"
 studio: "CodingZen"
+order: 3
 summary: "Turning the problem into a shape the computer can actually hold."
 date: "2025-10-22"
 tags: ["architecture", "domain", "boundaries"]

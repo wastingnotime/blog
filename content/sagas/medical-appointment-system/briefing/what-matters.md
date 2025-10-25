@@ -4,6 +4,7 @@ type: "episode"
 saga: "Medical Appointment System"
 arc: "Briefing"
 studio: "CodingZen"
+number: 2
 date: "2025-10-21"
 summary: "Which parts of the scheduling flow must be perfect, and which parts can be ugly and manual without hurting the clinic?"
 tags: ["healthcare", "priorities", "risk"]

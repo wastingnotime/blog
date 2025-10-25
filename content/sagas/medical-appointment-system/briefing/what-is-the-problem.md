@@ -4,6 +4,7 @@ type: "episode"
 saga: "Medical Appointment System"
 arc: "Briefing"
 studio: "CodingZen"
+number: 1
 date: "2025-10-20"
 summary: "The real pain behind scheduling: missed slots, double booking, no-shows, angry receptionist."
 tags: ["healthcare", "operations", "scheduling"]

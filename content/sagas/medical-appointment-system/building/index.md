@@ -4,6 +4,7 @@ type: "arc"
 saga: "Medical Appointment System"
 arc: "Building"
 studio: "CodingZen"
+order: 3
 summary: "Getting our hands dirty and making code exist."
 date: "2025-10-24"
 tags: ["implementation", "go", "api"]
