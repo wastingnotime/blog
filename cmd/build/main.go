@@ -62,6 +62,14 @@ type SagaSummary struct {
 	StartURL    string
 }
 
+type StudioPageData struct {
+	Section  string
+	Title    string
+	Summary  string
+	BodyHTML template.HTML
+	NowYear  int
+}
+
 const homeRecentLimit = 10
 const feedItemLimit = 20
 
@@ -183,6 +191,11 @@ func main() {
 		log.Fatalf("load about page: %v", err)
 	}
 
+	studioPage, err := site.LoadPage(filepath.Join("content", "studio", "index.md"))
+	if err != nil {
+		log.Fatalf("load studio page: %v", err)
+	}
+
 	tagIndex, libraryTags := site.BuildTagIndex(sagas, posts)
 
 	// 2) Render Home
@@ -241,6 +254,23 @@ func main() {
 		"public/about/index.html",
 		aboutData,
 		"templates/about.gohtml",
+	)
+
+	studioData := StudioPageData{
+		Section: "studio",
+		Title:   "studio — wasting no time",
+	}
+	if studioPage != nil {
+		studioData.Summary = studioPage.Summary
+		studioData.BodyHTML = studioPage.Body
+	}
+	studioData.NowYear = nowYear
+
+	renderView(base,
+		"studio",
+		"public/studio/index.html",
+		studioData,
+		"templates/studio.gohtml",
 	)
 
 	sagasData := map[string]any{
