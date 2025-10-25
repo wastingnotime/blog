@@ -1,0 +1,18 @@
+{{ define "studio" }}
+    {{ template "base" . }}
+{{ end }}
+
+{{ define "title" }}{{ .Title }}{{ end }}
+
+{{ define "h1" }}studio{{ end }}
+
+{{ define "content" }}
+    <main class="space-y-6 text-sm leading-relaxed text-zinc-200">
+        {{ if .Summary }}
+        <p class="text-zinc-400">{{ .Summary }}</p>
+        {{ end }}
+        <section class="space-y-6">
+            {{ .BodyHTML }}
+        </section>
+    </main>
+{{ end }}
