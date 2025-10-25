@@ -418,6 +418,9 @@ func postOutputPath(permalink string) string {
 	if perm == "" {
 		return filepath.Join("public", "index.html")
 	}
+	if strings.HasSuffix(perm, ".html") {
+		return filepath.Join("public", filepath.FromSlash(perm))
+	}
 	return filepath.Join("public", filepath.FromSlash(perm), "index.html")
 }
 
