@@ -192,7 +192,6 @@ func main() {
 		"NowYear":        nowYear,
 	}
 
-	//write(t, "home", "public/index.html", homeData)
 	renderView(base,
 		"home",
 		"public/index.html",
@@ -361,7 +360,7 @@ func main() {
 			"SagaTimeline": timeline,
 			"NowYear":      time.Now().Year(),
 		}
-		//write(t, "saga", filepath.Join("public", "sagas", s.Slug, "index.html"), sagaData)
+
 		renderView(base,
 			"saga",
 			"public/sagas/"+s.Slug+"/index.html",
@@ -417,7 +416,7 @@ func main() {
 				"LastRelease":   lastRel,
 				"NowYear":       time.Now().Year(),
 			}
-			//write(t, "arc", filepath.Join("public", "sagas", s.Slug, a.Slug, "index.html"), arcData)
+
 			renderView(base,
 				"arc",
 				"public/sagas/"+s.Slug+"/"+a.Slug+"/index.html",
@@ -468,8 +467,7 @@ func main() {
 					"Arc":           map[string]any{"Title": a.Title, "Slug": a.Slug},
 					"NowYear":       time.Now().Year(),
 				}
-				//out := filepath.Join("public", "sagas", s.Slug, a.Slug, e.Slug, "index.html")
-				//write(t, "episode", out, episodeData)
+
 				renderView(base,
 					"episode",
 					"public/sagas/"+s.Slug+"/"+a.Slug+"/"+e.Slug+"/index.html",
@@ -513,21 +511,6 @@ func main() {
 }
 
 // ---- utilities ----
-
-func write(t *template.Template, name, out string, data any) {
-	if err := os.MkdirAll(filepath.Dir(out), 0o755); err != nil {
-		log.Fatalf("mkdir %s: %v", out, err)
-	}
-	f, err := os.Create(out)
-	if err != nil {
-		log.Fatalf("create %s: %v", out, err)
-	}
-	defer f.Close()
-	if err := t.ExecuteTemplate(f, name, data); err != nil {
-		log.Fatalf("render %s (%s): %v", name, out, err)
-	}
-	log.Printf("wrote %s", out)
-}
 
 func toHomeSagas(sagas []*site.Saga) []HomeSaga {
 	out := make([]HomeSaga, 0, len(sagas))

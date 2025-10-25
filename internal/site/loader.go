@@ -84,11 +84,6 @@ type Post struct {
 	BodyHTML    template.HTML
 }
 
-// templateHTML is a minimal wrapper so html/template treats it as safe when you know it's safe.
-type templateHTML string
-
-func (h templateHTML) String() string { return string(h) }
-
 // Load walks a content root like:
 // content/sagas/<saga>/index.md
 // content/sagas/<saga>/<arc>/index.md
@@ -300,17 +295,6 @@ func LoadPosts(contentDir string) ([]Post, error) {
 	sort.Slice(all, func(i, j int) bool {
 		return all[i].Date.After(all[j].Date)
 	})
-	return all, nil
-}
-
-func BuildRecent(contentDir string, limit int) ([]Post, error) {
-	all, err := LoadPosts(contentDir)
-	if err != nil {
-		return nil, err
-	}
-	if len(all) > limit {
-		all = all[:limit]
-	}
 	return all, nil
 }
 
