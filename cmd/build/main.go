@@ -516,13 +516,13 @@ func writeFeed(cfg site.Config, items []HomeRecent) error {
 	feed := rss{Version: "2.0"}
 	feed.Channel = rssChannel{
 		Title:         "wasting no time",
-		Link:          cfg.Href("/"),
+		Link:          cfg.AbsoluteURL("/"),
 		Description:   "Latest posts and episodes from wasting no time",
 		LastBuildDate: time.Now().UTC().Format(time.RFC1123Z),
 	}
 
 	for _, item := range items {
-		link := cfg.Href(item.Permalink)
+		link := cfg.AbsoluteURL(item.Permalink)
 		feed.Channel.Items = append(feed.Channel.Items, rssItem{
 			Title:       item.Title,
 			Link:        link,
