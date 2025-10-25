@@ -4,7 +4,7 @@ type: "episode"
 saga: "Medical Appointment System"
 arc: "Proposing"
 studio: "CodingZen"
-date: 2025-10-23
+date: "2025-10-23"
 summary: "How to deliver value in small deployable pieces instead of promising an 8-month rewrite."
 tags: ["incremental-delivery", "slicing", "scoping"]
 ---
