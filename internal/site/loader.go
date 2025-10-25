@@ -70,15 +70,18 @@ type EpisodeRef struct {
 }
 
 type Post struct {
-	Title     string
-	Saga      string
-	Arc       string
-	Type      string
-	Studio    string
-	Tags      []string
-	Summary   string
-	Date      time.Time
-	Permalink string
+	Title       string
+	Saga        string
+	Arc         string
+	Type        string
+	Studio      string
+	Tags        []string
+	Summary     string
+	Date        time.Time
+	Permalink   string
+	Slug        string
+	ReadingTime string
+	BodyHTML    template.HTML
 }
 
 // templateHTML is a minimal wrapper so html/template treats it as safe when you know it's safe.
@@ -267,7 +270,7 @@ func collectPosts(contentDir string) ([]Post, error) {
 	return posts, err
 }
 
-func BuildRecent(contentDir string, limit int) ([]Post, error) {
+func LoadPosts(contentDir string) ([]Post, error) {
 	if _, err := os.Stat(contentDir); err != nil {
 		if os.IsNotExist(err) {
 			return []Post{}, nil
@@ -281,6 +284,14 @@ func BuildRecent(contentDir string, limit int) ([]Post, error) {
 	sort.Slice(all, func(i, j int) bool {
 		return all[i].Date.After(all[j].Date)
 	})
+	return all, nil
+}
+
+func BuildRecent(contentDir string, limit int) ([]Post, error) {
+	all, err := LoadPosts(contentDir)
+	if err != nil {
+		return nil, err
+	}
 	if len(all) > limit {
 		all = all[:limit]
 	}
@@ -388,15 +399,24 @@ func parseFrontmatter(path string) (Post, error) {
 	}
 
 	content := string(data)
-	start := strings.Index(content, "---")
-	if start != 0 {
+	if !strings.HasPrefix(content, "---") {
 		return Post{}, fmt.Errorf("no frontmatter in %s", path)
 	}
-	end := strings.Index(content[3:], "---")
+
+	rest := strings.TrimPrefix(content, "---")
+	rest = strings.TrimPrefix(rest, "\r\n")
+	rest = strings.TrimPrefix(rest, "\n")
+
+	end := strings.Index(rest, "---")
 	if end == -1 {
 		return Post{}, fmt.Errorf("no closing --- in %s", path)
 	}
-	fm := content[3 : end+3]
+
+	fm := rest[:end]
+	body := rest[end+3:]
+	body = strings.TrimPrefix(body, "\r\n")
+	body = strings.TrimPrefix(body, "\n")
+
 	var meta map[string]any
 	if err := yaml.Unmarshal([]byte(fm), &meta); err != nil {
 		return Post{}, err
@@ -424,6 +444,16 @@ func parseFrontmatter(path string) (Post, error) {
 	if v, ok := meta["tags"].([]any); ok && len(v) > 0 {
 		p.Tags = toStrings(v)
 	}
+	if v, _ := meta["reading_time"].(string); v != "" {
+		p.ReadingTime = v
+	}
+
+	fileSlug := strings.TrimSuffix(filepath.Base(path), ".md")
+	p.Slug = fileSlug
+	if v, _ := meta["slug"].(string); v != "" {
+		p.Slug = v
+	}
+
 	switch v := meta["date"].(type) {
 	case string:
 		if t, err := time.Parse(time.RFC3339, v); err == nil {
@@ -437,16 +467,16 @@ func parseFrontmatter(path string) (Post, error) {
 
 	// Compute permalink
 	if v, _ := meta["permalink"].(string); v != "" {
-		p.Permalink = v
+		p.Permalink = ensurePermalink(v)
 	} else {
 		if rel, err := filepath.Rel("content", path); err == nil {
 			dir := filepath.Dir(rel)
 			if dir == "." {
 				dir = ""
 			}
-			name := strings.TrimSuffix(filepath.Base(rel), ".md")
+			name := p.Slug
 			joined := filepath.Join(dir, name)
-			p.Permalink = "/" + filepath.ToSlash(joined)
+			p.Permalink = ensurePermalink("/" + filepath.ToSlash(joined))
 		} else {
 			p.Permalink = "/"
 		}
@@ -459,5 +489,36 @@ func parseFrontmatter(path string) (Post, error) {
 			p.Date = info.ModTime()
 		}
 	}
+
+	md := goldmark.New(
+		goldmark.WithExtensions(
+			highlighting.NewHighlighting(
+				highlighting.WithStyle("dracula"),
+			),
+		),
+	)
+	var buf bytes.Buffer
+	if err := md.Convert([]byte(body), &buf); err != nil {
+		return Post{}, err
+	}
+	p.BodyHTML = template.HTML(buf.String())
+
 	return p, nil
+}
+
+func ensurePermalink(p string) string {
+	p = strings.TrimSpace(p)
+	if p == "" {
+		return "/"
+	}
+	if !strings.HasPrefix(p, "/") {
+		p = "/" + p
+	}
+	if strings.HasSuffix(p, ".html") {
+		return p
+	}
+	if !strings.HasSuffix(p, "/") {
+		p += "/"
+	}
+	return p
 }

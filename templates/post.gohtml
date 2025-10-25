@@ -1,0 +1,19 @@
+{{ define "post" }}
+    {{ template "base" . }}
+{{ end }}
+
+{{ define "title" }}{{ .Post.Title }}{{ if .Post.Saga }} — {{ .Post.Saga }}{{ end }}{{ end }}
+{{ define "h1" }}{{ .Post.Title }}{{ end }}
+
+{{ define "content" }}
+    <div class="text-xs text-zinc-500 mb-3">
+        {{ .Post.Date.Format "2006-01-02" }}{{ if .Post.ReadingTime }} · {{ .Post.ReadingTime }}{{ end }}{{ if .Post.Tags }} · {{ range $i, $tag := .Post.Tags }}{{ if $i }}, {{ end }}#{{ $tag }}{{ end }}{{ end }}
+    </div>
+    {{ if .Post.Summary }}
+    <p class="text-sm text-zinc-400 mb-4">{{ .Post.Summary }}</p>
+    {{ end }}
+
+    <article class="prose prose-invert max-w-none">
+        {{ .Post.BodyHTML }}
+    </article>
+{{ end }}
