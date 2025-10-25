@@ -6,16 +6,21 @@
 {{ define "h1" }}wasting no time — index{{ end }}
 
 {{ define "content" }}
-    <!-- LATEST EPISODES (flat list) -->
+    <!-- RECENT POSTS (episodes + standalone posts) -->
     <section>
-        <h2 class="text-sm text-zinc-400 mb-2">LATEST</h2>
-        <ul class="space-y-1">
-            {{ range .LatestEpisodes }}
+        <h2 class="text-sm text-zinc-400 mb-2">RECENT</h2>
+        <ul class="space-y-3">
+            {{ range .RecentPosts }}
                 <li>
-                    <a class="hover:underline" href="{{ href (printf "/sagas/%s/%s/%s/" .SagaSlug .ArcSlug .Slug) }}">
-                        [Ep {{ printf "%02d" .Number }}] {{ .Title }}
+                    <a class="hover:underline" href="{{ href .Permalink }}">
+                        [{{ .Type }}] {{ .Title }}
                     </a>
-                    <span class="text-zinc-500 text-xs">— {{ .ArcTitle }} / {{ .SagaTitle }} / {{ .Date.Format "2006-01-02" }}</span>
+                    <span class="block text-zinc-500 text-xs mt-0.5">
+                        {{ .Date.Format "2006-01-02" }}{{ if .Saga }} · {{ .Saga }}{{ if .Arc }} / {{ .Arc }}{{ end }}{{ end }}
+                    </span>
+                    {{ if .Summary }}
+                        <p class="text-sm text-zinc-400 mt-1">{{ .Summary }}</p>
+                    {{ end }}
                 </li>
             {{ end }}
         </ul>
