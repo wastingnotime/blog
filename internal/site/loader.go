@@ -12,8 +12,6 @@ import (
 	"time"
 
 	"github.com/adrg/frontmatter"
-	"github.com/yuin/goldmark"
-	highlighting "github.com/yuin/goldmark-highlighting/v2"
 	"gopkg.in/yaml.v3"
 )
 
@@ -97,13 +95,7 @@ func Load(contentRoot string) ([]*Saga, []*EpisodeRef, error) {
 	sagas := map[string]*Saga{}
 	var latest []*EpisodeRef
 	//md := goldmark.New()
-	md := goldmark.New(
-		goldmark.WithExtensions(
-			highlighting.NewHighlighting(
-				highlighting.WithStyle("dracula"),
-			),
-		),
-	)
+	md := markdownRenderer()
 
 	err := filepath.WalkDir(contentRoot, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
@@ -490,13 +482,7 @@ func parseFrontmatter(path string) (Post, error) {
 		}
 	}
 
-	md := goldmark.New(
-		goldmark.WithExtensions(
-			highlighting.NewHighlighting(
-				highlighting.WithStyle("dracula"),
-			),
-		),
-	)
+	md := markdownRenderer()
 	var buf bytes.Buffer
 	if err := md.Convert([]byte(body), &buf); err != nil {
 		return Post{}, err

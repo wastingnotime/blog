@@ -100,13 +100,24 @@ func main() {
 	}
 
 	base := loadBase(cfg)
+	nowYear := time.Now().Year()
+
+	libraryPage, err := site.LoadPage(filepath.Join("content", "library", "index.md"))
+	if err != nil {
+		log.Fatalf("load library page: %v", err)
+	}
+
+	aboutPage, err := site.LoadPage(filepath.Join("content", "about", "index.md"))
+	if err != nil {
+		log.Fatalf("load about page: %v", err)
+	}
 
 	// 2) Render Home
 	homeData := map[string]any{
 		"Sagas":          toHomeSagas(sagas),
 		"LatestEpisodes": toHomeLatest(latest),
 		"RecentPosts":    toHomeRecent(latest, recentPosts, homeRecentLimit),
-		"NowYear":        time.Now().Year(),
+		"NowYear":        nowYear,
 	}
 
 	//write(t, "home", "public/index.html", homeData)
@@ -119,9 +130,10 @@ func main() {
 
 	// 3) Render Library
 	libData := map[string]any{
+		"Page":    libraryPage,
 		"Sagas":   sagas,
 		"Query":   "",
-		"NowYear": time.Now().Year(),
+		"NowYear": nowYear,
 	}
 	//write(t, "library", "public/library/index.html", libData)
 	renderView(base,
@@ -129,6 +141,18 @@ func main() {
 		"public/library/index.html",
 		libData,
 		"templates/library.gohtml",
+	)
+
+	aboutData := map[string]any{
+		"Page":    aboutPage,
+		"NowYear": nowYear,
+	}
+
+	renderView(base,
+		"about",
+		"public/about/index.html",
+		aboutData,
+		"templates/about.gohtml",
 	)
 
 	// 5) Render all Saga pages, Arc pages, and Episode pages

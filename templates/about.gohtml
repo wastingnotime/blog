@@ -1,0 +1,16 @@
+{{ define "about" }}
+    {{ template "base" . }}
+{{ end }}
+
+{{ define "title" }}{{ if .Page }}{{ .Page.Title }} — wasting no time{{ else }}About — wasting no time{{ end }}{{ end }}
+{{ define "h1" }}{{ if .Page }}{{ .Page.Title }}{{ else }}About{{ end }}{{ end }}
+
+{{ define "content" }}
+    {{ if .Page }}
+    <article class="space-y-6 text-sm leading-relaxed text-zinc-200">
+        {{ .Page.Body }}
+    </article>
+    {{ else }}
+    <p class="text-sm text-zinc-400">About content unavailable.</p>
+    {{ end }}
+{{ end }}
