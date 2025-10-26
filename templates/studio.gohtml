@@ -6,12 +6,12 @@
 {{ define "h1" }}{{ end }}
 
 {{ define "content" }}
-    <main class="space-y-6 text-sm leading-relaxed text-zinc-200">
-        {{ if .Summary }}
-        <p class="text-zinc-400">{{ .Summary }}</p>
-        {{ end }}
-        <section class="space-y-6">
-            {{ .BodyHTML }}
-        </section>
-    </main>
+<main class="space-y-8 text-sm leading-relaxed text-zinc-200">
+    {{ if .Summary }}
+    <p class="page-intro text-zinc-400">{{ .Summary }}</p>
+    {{ end }}
+    <section class="studio-sections space-y-8">
+        {{ .BodyHTML }}
+    </section>
+</main>
 {{ end }}
