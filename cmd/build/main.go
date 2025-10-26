@@ -10,6 +10,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"regexp"
 	"sort"
 	"strings"
 	"time"
@@ -67,7 +68,6 @@ type StudioPageData struct {
 	Title    string
 	Summary  string
 	BodyHTML template.HTML
-	NowYear  int
 }
 
 const homeRecentLimit = 10
@@ -96,6 +96,24 @@ func renderView(base *template.Template, viewName string, outPath string, data a
 	if err := t.ExecuteTemplate(f, viewName, data); err != nil {
 		panic(err)
 	}
+}
+
+func applyBasePathToHTMLLinks(cfg site.Config, body template.HTML) template.HTML {
+	relativeHref := regexp.MustCompile(`href="/([^"]*)"`)
+	updated := relativeHref.ReplaceAllStringFunc(string(body), func(m string) string {
+		matches := relativeHref.FindStringSubmatch(m)
+		if len(matches) != 2 {
+			return m
+		}
+		path := "/" + matches[1]
+		if cfg.BasePath != "" {
+			if path == cfg.BasePath || strings.HasPrefix(path, cfg.BasePath+"/") {
+				return m
+			}
+		}
+		return fmt.Sprintf(`href="%s"`, cfg.Href(path))
+	})
+	return template.HTML(updated)
 }
 
 func buildSagaSummaries(contentRoot string, sagas []*site.Saga) ([]SagaSummary, error) {
@@ -256,15 +274,21 @@ func main() {
 		"templates/about.gohtml",
 	)
 
-	studioData := StudioPageData{
+	studioContent := StudioPageData{
 		Section: "studio",
 		Title:   "studio — wasting no time",
 	}
 	if studioPage != nil {
-		studioData.Summary = studioPage.Summary
-		studioData.BodyHTML = studioPage.Body
+		studioContent.Summary = studioPage.Summary
+		studioContent.BodyHTML = applyBasePathToHTMLLinks(cfg, studioPage.Body)
 	}
-	studioData.NowYear = nowYear
+	studioData := struct {
+		StudioPageData
+		NowYear int
+	}{
+		StudioPageData: studioContent,
+		NowYear:        nowYear,
+	}
 
 	renderView(base,
 		"studio",
