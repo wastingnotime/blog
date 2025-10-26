@@ -2,14 +2,16 @@
     {{ template "base" . }}
 {{ end }}
 
-{{ define "title" }}{{ if .Page }}{{ .Page.Title }} — wasting no time{{ else }}about — wasting no time{{ end }}{{ end }}
+{{ define "title" }}about — wasting no time{{ end }}
 
 {{ define "content" }}
+<main>
     {{ if .Page }}
-    <article class="space-y-6 text-sm leading-relaxed text-zinc-200">
+    <section class="page-body">
         {{ .Page.Body }}
-    </article>
+    </section>
     {{ else }}
-    <p class="text-sm text-zinc-400">About content unavailable.</p>
+    <p class="page-intro">About content unavailable.</p>
     {{ end }}
+</main>
 {{ end }}
