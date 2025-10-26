@@ -57,11 +57,17 @@
     <!-- TOP NAV -->
     <header class="mb-6">
         <nav class="menu text-sm text-zinc-400 flex gap-4">
-            <a class="hover:text-white{{ if eq .Section "home" }} active{{ end }}" href="{{ href "/" }}">home</a>
-            <a class="hover:text-white{{ if eq .Section "studio" }} active{{ end }}" href="{{ href "/studio" }}">studio</a>
-            <a class="hover:text-white{{ if eq .Section "sagas" }} active{{ end }}" href="{{ href "/sagas" }}">sagas</a>
-            <a class="hover:text-white{{ if eq .Section "library" }} active{{ end }}" href="{{ href "/library" }}">library</a>
-            <a class="hover:text-white{{ if eq .Section "about" }} active{{ end }}" href="{{ href "/about" }}">about</a>
+            <a class="hover:text-white{{ if eq .Section "home" }} active{{ end }}" href="{{ href "/" }}">HOME</a>
+            <span class="mx-2">/</span>
+            <a class="hover:text-white{{ if eq .Section "studio" }} active{{ end }}" href="{{ href "/studio" }}">STUDIO</a>
+            <span class="mx-2">/</span>
+            <a class="hover:text-white{{ if eq .Section "sagas" }} active{{ end }}" href="{{ href "/sagas" }}">SAGAS</a>
+            <span class="mx-2">/</span>
+            <a class="hover:text-white{{ if eq .Section "library" }} active{{ end }}" href="{{ href "/library" }}">LIBRARY</a>
+            <span class="mx-2">/</span>
+            <a class="hover:text-white{{ if eq .Section "about" }} active{{ end }}" href="{{ href "/about" }}">ABOUT</a>
+            <span class="mx-2">/</span>
+            <a class="hover:text-white" href="{{ href "/feed.xml" }}">RSS</a>
         </nav>
         <h1 class="mt-3 text-xl tracking-tight">{{ block "h1" . }}{{ end }}</h1>
     </header>

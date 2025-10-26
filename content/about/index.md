@@ -6,9 +6,7 @@ summary: "Why this site exists, what you’ll find here, and how to reach me."
 date: "2025-10-25"
 ---
 
-# wasting no time
-
-Parallel sagas evolving at their own pace.
+# Parallel sagas evolving at their own pace.
 
 I'm **Henrique Riccio**, a software engineer and architect who enjoys designing systems that age well.
 
