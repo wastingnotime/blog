@@ -2,37 +2,47 @@
     {{ template "base" . }}
 {{ end }}
 
-{{ define "title" }}wasting no time{{ end }}
+{{ define "title" }}wasting no time — architecture, focus, and growth in public{{ end }}
+
+{{ define "h1" }}wasting no time — architecture, focus, and growth in public{{ end }}
+
+{{ define "intro" }}
+Experiments in architecture, focus, and growth — built in public, one saga at a time.
+{{ end }}
 
 {{ define "content" }}
-    <!-- RECENT POSTS (episodes + standalone posts) -->
+    <!-- RECENT POSTS -->
     <section>
         <h2 class="text-sm text-zinc-400 mb-2">RECENT</h2>
         <ul class="space-y-3">
             {{ range .RecentPosts }}
                 <li>
-                    <a class="hover:underline" href="{{ href .Permalink }}">
+                    <a href="{{ href .Permalink }}">
                         [{{ .Type }}] {{ .Title }}
                     </a>
                     <span class="block text-zinc-500 text-xs mt-0.5">
                         {{ .Date.Format "2006-01-02" }}{{ if .Saga }} · {{ .Saga }}{{ if .Arc }} / {{ .Arc }}{{ end }}{{ end }}
                     </span>
                     {{ if .Summary }}
-                        <p class="text-sm text-zinc-400 mt-1">{{ .Summary }}</p>
+                        <p class="text-sm text-zinc-400 leading-relaxed mt-1">
+                            {{ .Summary }}
+                        </p>
                     {{ end }}
                 </li>
             {{ end }}
         </ul>
     </section>
 
-    <!-- SAGAS (flat) -->
+    <!-- ACTIVE SAGAS -->
     <section class="mt-6">
         <h2 class="text-sm text-zinc-400 mb-2">SAGAS</h2>
         <ul class="space-y-1">
             {{ range .Sagas }}
                 <li>
-                    <a class="hover:underline" href="{{ href (printf "/sagas/%s/" .Slug) }}">[Saga] {{ .Title }}</a>
-                    <span class="text-zinc-500 text-xs">— {{ .EpisodeCount }} eps; last {{ if .LastRelease }}{{ .LastRelease.Format "2006-01-02" }}{{ else }}n/a{{ end }}; {{ .Status }}</span>
+                    <a href="{{ href (printf "/sagas/%s/" .Slug) }}">{{ .Title }}</a>
+                    <span class="text-zinc-500 text-xs">
+                        — {{ .EpisodeCount }} eps; last {{ if .LastRelease }}{{ .LastRelease.Format "2006-01-02" }}{{ else }}n/a{{ end }}; {{ .Status }}
+                    </span>
                 </li>
             {{ end }}
         </ul>

@@ -8,24 +8,58 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script>tailwind.config={theme:{extend:{fontFamily:{mono:["ui-monospace","SFMono-Regular","Menlo","Monaco","Consolas","Liberation Mono","Courier New","monospace"]}}}};</script>
     <style>
-        html{font-kerning:normal}
-        .menu a{
+        html { font-kerning: normal; }
+
+        /* nav links and normal links should look the same */
+        .menu a {
             color:#a1a1aa;
-            text-decoration:none
+            text-decoration:none;
+            transition: color .15s ease;
         }
-        .menu a:hover{
-            color:#d4d4d8
-        }
-        .menu a.active{
+        .menu a:hover {
             color:#fff;
-            font-weight:500
+            text-decoration:underline;
         }
-        .menu a.active::after{
+        .menu a.active {
+            color:#fff;
+            font-weight:500;
+        }
+        .menu a.active::after {
             content:"•";
             margin-left:0.4em;
             opacity:0.6;
-            font-weight:400
+            font-weight:400;
         }
+
+        /* global link style */
+        a {
+            color:#a1a1aa;
+            text-decoration:none;
+            transition: color .15s ease;
+        }
+        a:hover {
+            color:#fff;
+            text-decoration:underline;
+        }
+
+        /* remove bullets / left padding across lists */
+        ul {
+            list-style:none;
+            padding-left:0;
+            margin:0;
+        }
+
+        /* hide empty intro paragraphs */
+        .intro:empty {
+            display:none;
+        }
+
+        /* utility fallbacks for pages that rely on spacing in lists */
+        .space-y-1 > * + * { margin-top: .25rem; }
+        .space-y-2 > * + * { margin-top: .5rem; }
+        .space-y-3 > * + * { margin-top: .75rem; }
+        .space-y-6 > * + * { margin-top: 1.5rem; }
+
         .breadcrumb {
             font-size:0.9rem;
             color:#888;
@@ -43,6 +77,7 @@
             margin:0 .4rem;
             color:#555;
         }
+
         .arc-name,
         .episode-title {
             color:#fff;
@@ -50,62 +85,48 @@
             margin:0 0 1rem 0;
             font-size:1.1rem;
         }
-        /* long-form page body styling */
-        .page-body h3 {
-            color:#fff;
-            font-weight:500;
-            font-size:0.9rem;
-            line-height:1.4;
-            letter-spacing:0.03em;
-            margin-top:2rem;
-            margin-bottom:0.5rem;
-        }
 
-        .page-body p {
-            color:#aaa;
-            font-size:0.9rem;
-            line-height:1.5;
-            margin:0 0 1rem 0;
-        }
-
-        .page-body a {
-            color:#aaa;
+        .topic-link {
+            border-width:1px;
+            border-color: rgb(39 39 42);
+            border-style: solid;
+            border-radius:.25rem;
+            padding:.5rem .75rem;
+            color: rgb(244 244 245);
             text-decoration:none;
-            border-bottom:1px solid #555;
+            transition: color .15s ease, border-color .15s ease;
         }
-
-        .page-body a:hover {
+        .topic-link:hover {
+            border-color: rgba(255,255,255,.4);
             color:#fff;
-            border-bottom-color:#fff;
-        }
-
-        .page-intro {
-            color:#aaa;
-            font-size:0.9rem;
-            line-height:1.5;
-            margin:0 0 2rem 0;
+            text-decoration:underline;
         }
     </style>
 </head>
 <body class="bg-black text-zinc-100 font-mono selection:bg-white/20">
 <div class="max-w-3xl mx-auto px-4 py-6">
-    <!-- TOP NAV -->
     <header class="mb-6">
         <nav class="menu text-sm text-zinc-400">
-            <a class="hover:text-white{{ if eq .Section "home" }} active{{ end }}" href="{{ href "/" }}">HOME</a>
+            <a class="{{ if eq .Section "home" }}active{{ end }}" href="{{ href "/" }}">HOME</a>
             <span class="mx-2 text-zinc-600" aria-hidden="true">/</span>
-            <a class="hover:text-white{{ if eq .Section "studio" }} active{{ end }}" href="{{ href "/studio" }}">STUDIO</a>
+            <a class="{{ if eq .Section "studio" }}active{{ end }}" href="{{ href "/studio" }}">STUDIO</a>
             <span class="mx-2 text-zinc-600" aria-hidden="true">/</span>
-            <a class="hover:text-white{{ if eq .Section "sagas" }} active{{ end }}" href="{{ href "/sagas" }}">SAGAS</a>
+            <a class="{{ if eq .Section "sagas" }}active{{ end }}" href="{{ href "/sagas" }}">SAGAS</a>
             <span class="mx-2 text-zinc-600" aria-hidden="true">/</span>
-            <a class="hover:text-white{{ if eq .Section "library" }} active{{ end }}" href="{{ href "/library" }}">LIBRARY</a>
+            <a class="{{ if eq .Section "library" }}active{{ end }}" href="{{ href "/library" }}">LIBRARY</a>
             <span class="mx-2 text-zinc-600" aria-hidden="true">/</span>
-            <a class="hover:text-white{{ if eq .Section "about" }} active{{ end }}" href="{{ href "/about" }}">ABOUT</a>
+            <a class="{{ if eq .Section "about" }}active{{ end }}" href="{{ href "/about" }}">ABOUT</a>
             <span class="mx-2 text-zinc-600" aria-hidden="true">/</span>
-            <a class="hover:text-white" href="{{ href "/feed.xml" }}">RSS</a>
+            <a href="{{ href "/feed.xml" }}">RSS</a>
         </nav>
-        <h1 class="mt-3 text-xl tracking-tight">{{ block "h1" . }}{{ end }}</h1>
+
+        <!-- SEO heading (page-specific) -->
+        <h1 class="mt-3 text-xl tracking-tight text-zinc-300">{{ block "h1" . }}{{ end }}</h1>
     </header>
+
+    <p class="intro text-base text-zinc-200 leading-relaxed mb-8">
+        {{- block "intro" . -}}{{ end }}
+    </p>
 
     {{ block "content" . }}{{ end }}
 

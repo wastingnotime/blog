@@ -2,16 +2,43 @@
     {{ template "base" . }}
 {{ end }}
 
-{{ define "title" }}{{ .Title }}{{ end }}
-{{ define "h1" }}{{ end }}
+{{ define "title" }}studio — building systems in public{{ end }}
+
+{{ define "h1" }}studio — building systems in public{{ end }}
+
+{{ define "intro" }}
+Parallel spaces evolving at their own pace. This is where I build in public — architecture, Go, experiments, and things that might become products.
+{{ end }}
 
 {{ define "content" }}
-<main>
-    {{ if .Summary }}
-    <p class="page-intro">{{ .Summary }}</p>
-    {{ end }}
-    <section class="page-body">
-        {{ .BodyHTML }}
-    </section>
-</main>
+    <main>
+        <section class="page-body">
+
+            <h3 class="text-lg text-zinc-100 font-normal mb-1">wasting no time studio</h3>
+            <p class="text-sm text-zinc-400 leading-relaxed mb-4">
+                Architecture, integration, performance, and the discipline of focus.<br>
+                This is where systems are shaped and decisions are made in public.
+            </p>
+            <p class="text-sm text-zinc-400 leading-relaxed mb-4">
+                see active sagas → <a href="{{ href "/sagas" }}">/sagas</a><br>
+                explore topics → <a href="{{ href "/library" }}">/library</a>
+            </p>
+
+            <h3 class="text-lg text-zinc-100 font-normal mb-1">codingzen labs</h3>
+            <p class="text-sm text-zinc-400 leading-relaxed mb-4">
+                Golang, runtime behavior, experiments, and small playable things.<br>
+                This space will also cover Go-based game development.
+            </p>
+            <p class="text-sm text-zinc-400 leading-relaxed mb-4">
+                visit <a href="https://codingzen.org/">codingzen.org</a>
+            </p>
+
+            <h3 class="text-lg text-zinc-100 font-normal mb-1">experiments</h3>
+            <p class="text-sm text-zinc-400 leading-relaxed mb-4">
+                Prototypes and explorations that might become products — or might just prove a point.<br>
+                Sometimes useful. Sometimes just curiosity with teeth.
+            </p>
+
+        </section>
+    </main>
 {{ end }}

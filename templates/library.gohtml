@@ -1,0 +1,34 @@
+{{ define "library_index" }}
+    {{ template "base" . }}
+{{ end }}
+
+{{ define "title" }}library — an index of ideas and implementation notes{{ end }}
+
+{{ define "h1" }}library — an index of ideas and implementation notes{{ end }}
+
+{{ define "intro" }}
+A living index. Pick a topic and you’ll see every post, every saga episode, and every note I’ve published that touches that idea. This is how to navigate depth without scrolling chronologically forever.
+{{ end }}
+
+{{ define "content" }}
+    <main>
+        <section>
+            {{ if .Tags }}
+                <ul class="grid gap-2 sm:grid-cols-2">
+                    {{ range .Tags }}
+                        <li>
+                            <a class="topic-link block border border-zinc-800 rounded px-3 py-2 text-zinc-100 transition-colors"
+                               href="{{ href (printf "/library/%s/" .Slug) }}">
+                                {{ .Name }}
+                            </a>
+                        </li>
+                    {{ end }}
+                </ul>
+            {{ else }}
+                <p class="text-sm text-zinc-500 leading-relaxed">
+                    No tags available yet. Add <code>tags</code> to your content to populate this page.
+                </p>
+            {{ end }}
+        </section>
+    </main>
+{{ end }}

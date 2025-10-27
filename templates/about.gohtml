@@ -2,16 +2,42 @@
     {{ template "base" . }}
 {{ end }}
 
-{{ define "title" }}about — wasting no time{{ end }}
+{{ define "title" }}The story behind wasting no time — architecture, focus, intent{{ end }}
+
+{{ define "h1" }}
+The story behind <span class="text-zinc-100">wasting no time</span>
+{{ end }}
+
+{{ define "intro" }}
+Parallel sagas evolving at their own pace. I'm Henrique Riccio, a software engineer and architect who enjoys designing systems that age well. <strong>wasting no time</strong> is where I build in public, write honestly about the work, and document what it costs to do things with intention.
+{{ end }}
 
 {{ define "content" }}
-<main>
-    {{ if .Page }}
-    <section class="page-body">
-        {{ .Page.Body }}
-    </section>
-    {{ else }}
-    <p class="page-intro">About content unavailable.</p>
-    {{ end }}
-</main>
+    <main>
+        <section class="page-body">
+
+            <h3 class="text-lg text-zinc-100 font-normal mb-1">what this is</h3>
+            <p class="text-sm text-zinc-400 leading-relaxed mb-4">
+                <strong>wasting no time</strong> is a personal studio — part reflection, part laboratory. It’s where I document the process of building things that matter, and the ideas that appear between builds.
+            </p>
+
+            <h3 class="text-lg text-zinc-100 font-normal mb-1">what you’ll find here</h3>
+            <p class="text-sm text-zinc-400 leading-relaxed mb-4">
+                Long-term efforts, technical notes, and reflections about focus, architecture, and the cost of clarity.
+            </p>
+
+            <h3 class="text-lg text-zinc-100 font-normal mb-1">why “wasting no time”</h3>
+            <p class="text-sm text-zinc-400 leading-relaxed mb-4">
+                The name isn’t about rushing — it’s about intention. Using time with purpose instead of letting others spend it for you.
+            </p>
+
+            <h3 class="text-lg text-zinc-100 font-normal mb-1">connect</h3>
+            <ul class="text-sm text-zinc-400 leading-relaxed mb-4">
+                <li>GitHub: <a href="https://github.com/wastingnotime">github.com/wastingnotime</a></li>
+                <li>LinkedIn: <a href="https://www.linkedin.com/in/henriquericcio">linkedin.com/in/henriquericcio</a></li>
+                <li>Substack: <a href="https://wastingnotime.substack.com/">wastingnotime.substack.com</a></li>
+            </ul>
+
+        </section>
+    </main>
 {{ end }}
