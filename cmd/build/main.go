@@ -243,7 +243,7 @@ func main() {
 		"library_index",
 		"public/library/index.html",
 		libraryData,
-		"templates/library_index.gohtml",
+		"templates/library.gohtml",
 	)
 
 	for _, tag := range libraryTags {
