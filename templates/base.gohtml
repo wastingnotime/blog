@@ -102,6 +102,19 @@
             text-decoration:underline;
         }
     </style>
+    {{ if .IsProd }}
+        <!-- Privacy-friendly analytics by Plausible -->
+        <script async src="https://plausible.io/js/pa-2lsFn2vS18jqSs3R9h0G6.js"></script>
+        <script>
+            window.plausible = window.plausible || function() {
+                (plausible.q = plausible.q || []).push(arguments)
+            };
+            plausible.init = plausible.init || function(i) {
+                plausible.o = i || {};
+            };
+            plausible.init();
+        </script>
+    {{ end }}
 </head>
 <body class="bg-black text-zinc-100 font-mono selection:bg-white/20">
 <div class="max-w-3xl mx-auto px-4 py-6">

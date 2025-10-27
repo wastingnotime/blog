@@ -3,12 +3,14 @@ package site
 import (
 	"os"
 	"path"
+	"strconv"
 	"strings"
 )
 
 type Config struct {
 	BasePath string
 	BaseURL  string
+	IsProd   bool
 }
 
 func ConfigFromEnv() Config {
@@ -20,9 +22,11 @@ func ConfigFromEnv() Config {
 	if baseURL == "" {
 		baseURL = os.Getenv("BASE_URL")
 	}
+	isProd, _ := strconv.ParseBool(os.Getenv("IS_PROD_ENV"))
 	return Config{
 		BasePath: normalizeBasePath(base),
 		BaseURL:  normalizeBaseURL(baseURL),
+		IsProd:   isProd,
 	}
 }
 

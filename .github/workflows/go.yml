@@ -48,6 +48,7 @@ jobs:
 
     - name: execute generator
       env:
+        IS_PROD_ENV: true
         SITE_BASE_URL: https://wastingnotime.org/
       run: ./build
 

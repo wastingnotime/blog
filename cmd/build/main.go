@@ -68,6 +68,7 @@ type StudioPageData struct {
 	Title    string
 	Summary  string
 	BodyHTML template.HTML
+	IsProd   bool
 }
 
 const homeRecentLimit = 10
@@ -223,6 +224,7 @@ func main() {
 		"LatestEpisodes": toHomeLatest(latest),
 		"RecentPosts":    toHomeRecent(latest, recentPosts, homeRecentLimit),
 		"NowYear":        nowYear,
+		"IsProd":         cfg.IsProd,
 	}
 
 	renderView(base,
@@ -237,6 +239,7 @@ func main() {
 		"Section": "library",
 		"Tags":    libraryTags,
 		"NowYear": nowYear,
+		"IsProd":  cfg.IsProd,
 	}
 
 	renderView(base,
@@ -252,6 +255,7 @@ func main() {
 			"Tag":     tag.Name,
 			"Posts":   tagIndex[tag.Name],
 			"NowYear": nowYear,
+			"IsProd":  cfg.IsProd,
 		}
 		renderView(base,
 			"tag",
@@ -265,6 +269,7 @@ func main() {
 		"Section": "about",
 		"Page":    aboutPage,
 		"NowYear": nowYear,
+		"IsProd":  cfg.IsProd,
 	}
 
 	renderView(base,
@@ -277,6 +282,7 @@ func main() {
 	studioContent := StudioPageData{
 		Section: "studio",
 		Title:   "studio — wasting no time",
+		IsProd:  cfg.IsProd,
 	}
 	if studioPage != nil {
 		studioContent.Summary = studioPage.Summary
@@ -285,9 +291,11 @@ func main() {
 	studioData := struct {
 		StudioPageData
 		NowYear int
+		IsProd  bool
 	}{
 		StudioPageData: studioContent,
 		NowYear:        nowYear,
+		IsProd:         cfg.IsProd,
 	}
 
 	renderView(base,
@@ -301,6 +309,7 @@ func main() {
 		"Section":       "sagas",
 		"SagaSummaries": sagaSummaries,
 		"NowYear":       nowYear,
+		"IsProd":        cfg.IsProd,
 	}
 
 	renderView(base,
@@ -415,6 +424,7 @@ func main() {
 			"Arcs":         arcsLite,
 			"SagaTimeline": timeline,
 			"NowYear":      time.Now().Year(),
+			"IsProd":       cfg.IsProd,
 		}
 
 		renderView(base,
@@ -467,6 +477,7 @@ func main() {
 				PrevArc:       arcLink(prevArc),
 				NextArc:       arcLink(nextArc),
 				LastRelease:   a.LastRelease,
+				IsProd:        cfg.IsProd,
 			}
 
 			renderView(base,
@@ -509,6 +520,7 @@ func main() {
 					EpisodeBody:        e.BodyHTML,
 					PrevEpisode:        episodeLink(prevEp),
 					NextEpisode:        episodeLink(nextEp),
+					IsProd:             cfg.IsProd,
 				}
 
 				renderView(base,
@@ -527,6 +539,7 @@ func main() {
 			"Section": "library",
 			"Post":    p,
 			"NowYear": time.Now().Year(),
+			"IsProd":  cfg.IsProd,
 		}
 		renderView(base,
 			"post",

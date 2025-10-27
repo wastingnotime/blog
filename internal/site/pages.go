@@ -29,6 +29,7 @@ type ArcPageData struct {
 	PrevArc       *ArcLink
 	NextArc       *ArcLink
 	LastRelease   *time.Time
+	IsProd        bool
 }
 
 type EpisodePageData struct {
@@ -47,4 +48,5 @@ type EpisodePageData struct {
 	EpisodeBody        template.HTML
 	PrevEpisode        *EpisodeLink
 	NextEpisode        *EpisodeLink
+	IsProd             bool
 }
