@@ -48,8 +48,7 @@ jobs:
 
     - name: execute generator
       env:
-        BASE_PATH: /blog/
-        SITE_BASE_URL: https://wastingnotime.github.io/
+        SITE_BASE_URL: https://wastingnotime.org/
       run: ./build
 
     - name: upload artifacts
