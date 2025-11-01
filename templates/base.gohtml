@@ -101,6 +101,133 @@
             color:#fff;
             text-decoration:underline;
         }
+
+         /* WastingNoTime — unified reading rhythm (dark, minimal) */
+         /* Inline version until asset pipeline is introduced */
+
+         .prose {
+             max-width: none;
+             --wnt-text-100: rgb(244 244 245);
+             --wnt-text-200: rgb(228 228 231);
+             --wnt-text-300: rgb(212 212 216);
+             --wnt-text-400: rgb(161 161 170);
+             --wnt-border:   rgb(39 39 42);
+         }
+
+        /* Headings */
+        .prose h2 {
+            margin-top: 3rem;
+            margin-bottom: 1rem;
+            color: #fff;
+            font-weight: 600;
+            font-size: 1.25rem;
+            line-height: 1.6;
+        }
+        .prose h3 {
+            margin-top: 2rem;
+            margin-bottom: 0.75rem;
+            color: var(--wnt-text-200);
+            font-weight: 500;
+            font-size: 1.1rem;
+            line-height: 1.6;
+        }
+        .prose h3 strong { font-weight: 500; }
+
+        /* Paragraph rhythm */
+        .prose p {
+            margin-top: 1.25rem;
+            margin-bottom: 1.25rem;
+            line-height: 1.7;
+            color: var(--wnt-text-200);
+        }
+        .prose h2 + p,
+        .prose h3 + p { margin-top: 0.75rem; }
+
+        /* Blockquotes */
+        .prose blockquote {
+            border-left: 2px solid rgb(63 63 70);
+            padding-left: 1rem;
+            margin: 1.75rem 0;
+            color: var(--wnt-text-300);
+            font-style: italic;
+            line-height: 1.8;
+        }
+        .prose blockquote p { margin: 0; }
+        .prose blockquote strong { color: #fff; font-weight: 500; }
+
+        /* Lists */
+        .prose ul { list-style: disc; }
+        .prose ol { list-style: decimal; }
+        .prose ul, .prose ol {
+            margin: 1.25rem 0;
+            padding-left: 1.25rem;
+            color: var(--wnt-text-200);
+        }
+        .prose li + li { margin-top: 0.35rem; }
+        .prose li > p { margin: 0.25rem 0; }
+
+        /* Code */
+        .prose code {
+            background: rgba(255,255,255,0.04);
+            padding: 0.1rem 0.35rem;
+            border-radius: 0.25rem;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+            color: var(--wnt-text-100);
+        }
+        .prose pre {
+            margin: 1.5rem 0;
+            padding: 1rem;
+            background: #0b0b0b;
+            border: 1px solid var(--wnt-border);
+            border-radius: 0.5rem;
+            overflow: auto;
+        }
+        .prose pre code { background: transparent; padding: 0; border-radius: 0; }
+
+        /* Links */
+        .prose a {
+            color: var(--wnt-text-400);
+            text-decoration: underline;
+            text-decoration-thickness: .06em;
+            text-underline-offset: 2px;
+        }
+        .prose a:hover { color: #fff; }
+
+        /* Images, figures, hr, tables */
+        .prose img { display: block; margin: 1.25rem 0; border-radius: 0.5rem; }
+        .prose figure { margin: 1.75rem 0; }
+        .prose figcaption {
+            margin-top: 0.5rem;
+            font-size: 0.85rem;
+            color: var(--wnt-text-400);
+            text-align: center;
+        }
+        .prose hr {
+            border: 0;
+            border-top: 1px solid var(--wnt-border);
+            margin: 2rem 0;
+        }
+        .prose table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5rem 0;
+            font-size: 0.95rem;
+            color: var(--wnt-text-200);
+        }
+        .prose thead th {
+            text-align: left;
+            font-weight: 600;
+            color: #fff;
+            border-bottom: 1px solid var(--wnt-border);
+            padding: 0.5rem 0.75rem;
+        }
+        .prose tbody td {
+            border-top: 1px solid var(--wnt-border);
+            padding: 0.5rem 0.75rem;
+        }
+
+        /* Trim trailing space */
+        .prose :last-child { margin-bottom: 0 !important; }
     </style>
     {{ if .IsProd }}
         <!-- Privacy-friendly analytics by Plausible -->
