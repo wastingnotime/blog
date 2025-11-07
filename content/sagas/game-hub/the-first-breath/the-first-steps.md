@@ -40,7 +40,7 @@ A space where multiple games can live, grow, and talk to each other — like a t
 
 ---
 
-### **Why a Game Hub?**
+### Why a Game Hub?
 
 Choosing what to build is harder than building itself.  
 Many creators freeze in front of a blank page, thinking, _“Where do I even start?”_
@@ -62,7 +62,7 @@ It’s the perfect middle ground — technically rich, creatively open, and buil
 
 ---
 
-### **So What’s a Game Hub?**
+### So What’s a Game Hub?
 
 Imagine a small digital arcade in the cloud.  
 Players arrive, pick a game, challenge each other, maybe check their scores — all in one connected space.  
@@ -72,7 +72,7 @@ That’s our canvas.
 
 ---
 
-### **The Journey Ahead**
+### The Journey Ahead
 
 In the real world, software starts from requirements; someone already knows what the customer wants.  
 But here, we’ve chosen a different mode: **exploration.**  
