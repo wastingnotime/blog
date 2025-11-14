@@ -5,10 +5,15 @@ saga: "Game Hub"
 arc: "The First Breath"
 studio: "WastingNoTime Studio"
 status: "in progress"
-order: 3
+number: 3
 summary: "A duel begins not with code, but with intent — two players entering the same rhythm of curiosity. Here we shape the invisible choreography: how sessions emerge, how rules awaken, and how a spark becomes a match."
 date: "2025-11-14"
-tags: ["game-design", "session-flow", "backend", "architecture", "reflection"]
+tags:
+  - game-design
+  - session-flow
+  - backend
+  - architecture
+  - reflection
 ---
 
 ### **How a Duel is Born**
