@@ -16,7 +16,7 @@ tags:
   - reflection
 ---
 
-### **How a Duel is Born**
+### How a Duel is Born
 
 Every story begins with a spark — and in our case, that spark is a **player’s decision to start a duel.**
 
