@@ -23,7 +23,7 @@ tags:
   - architecture
   - game-dev
 ---
-## **Designing the First API: `/duel/start`**
+### Designing the First API: `/duel/start`
 
 Every system begins with a single request.  
 For our Game Hub, that first one is humble but symbolic:
@@ -37,7 +37,7 @@ And the funny thing about beginnings is — they look simple, but they set the t
 
 ---
 
-### **Defining What “Start” Means**
+#### Defining What “Start” Means
 
 When a player calls `/duel/start`, what are they _really_ asking?
 
@@ -53,7 +53,7 @@ So instead of forcing the duel into existence, we’ll queue that intention and 
 
 ---
 
-### **Step 1 — The Data Model**
+#### Step 1 — The Data Model
 
 Let’s start small — in Go, we define a `Challenge` struct.
 
@@ -76,7 +76,7 @@ Later, we might add things like `SkillLevel`, `Region`, or `GameMode` to improve
 
 ---
 
-### **Step 2 — The Handler**
+#### Step 2 — The Handler
 
 In Go, handlers are where ideas meet HTTP reality.  
 Our first one looks like this:
@@ -121,7 +121,7 @@ You could call this the “paper prototype” of an API: something that looks re
 
 ---
 
-### **Step 3 — The Philosophy of Simple Starts**
+#### Step 3 — The Philosophy of Simple Starts
 
 Why so basic?  
 Because complexity grows by itself — you never need to plant it.
@@ -158,7 +158,7 @@ A first breath of life.
 
 ---
 
-### **Step 4 — Looking Ahead**
+#### Step 4 — Looking Ahead
 
 Now we have our entry point.  
 From here, we can:
@@ -174,7 +174,7 @@ Step by step, the _hub_ will start to emerge — not from a blueprint, but from 
 
 ---
 
-### **Closing Thought**
+#### Closing Thought
 
 Software isn’t born perfect — it grows like a story.  
 And every story starts with a scene that seems small, until you look back and realize it was everything.
