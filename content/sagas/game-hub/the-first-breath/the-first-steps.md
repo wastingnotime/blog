@@ -1,21 +1,25 @@
 ---  
-title: "The First Steps"  
-type: "episode"  
-saga: "Game Hub"  
-arc: "The First Breath"  
+title: "The First Steps"
+type: "episode"
+saga: "Game Hub"
+arc: "The First Breath"
 studio: "WastingNoTime Studio"
-number: 1  
-date: "2025-10-31"  
+number: 1
+date: "2025-10-31"
 summary: "Every creation starts with a breath. This episode shares how WastingNoTime came to life through curiosity, challenge, and a bit of rebellion — choosing to build a Game Hub as a living lab for ideas and code."
 tags:
+# Domain
 - game-hub
-- saga
+- trivia-duel
+# Technology
 - golang
 - backend
 - cloud-architecture
-- storytelling
+# Topic
+- saga
 - exploration
-- trivia-duel
+# Process / Meta
+- storytelling
 ---
 
 ### The First Steps

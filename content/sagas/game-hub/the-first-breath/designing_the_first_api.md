@@ -9,13 +9,19 @@ number: 4
 summary: "The first endpoint of Trivia Duel — /duel/start — defines how intention becomes structure. A simple request opens the door for matchmaking, concurrency, and the quiet choreography behind a duel."
 date: "2025-11-24"
 tags:
-  - game-dev
-  - distributed-systems
-  - architecture
-  - golang
-  - system-design
-  - matchmaking
+  # Domain
   - trivia-duel
+  - matchmaking
+  - duel-flow
+  # Technology
+  - golang
+  - backend
+  - distributed-systems
+  - api-design
+  - system-design
+  # Topic
+  - architecture
+  - game-dev
 ---
 ## **Designing the First API: `/duel/start`**
 

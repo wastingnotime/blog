@@ -6,12 +6,16 @@ status: "in progress"
 order: 1
 summary: "Building a modular hub where multiple games can live, share logic, and evolve in the cloud — from the first API call to distributed systems patterns."
 date: "2025-10-31"
-tags: 
+tags:
+  # Domain
+  - game-hub
   - games
+  # Technology
   - architecture
   - golang
   - cloud
   - backend
+  # Process / Meta
   - learning-in-public
 ---
 

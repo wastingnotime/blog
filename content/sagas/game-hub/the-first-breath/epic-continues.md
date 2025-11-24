@@ -9,10 +9,14 @@ number: 2
 summary: "The spark of Trivia Duel marks the moment when play meets architecture. Beneath the simplicity of two minds facing a question, patterns of state, timing, and fairness begin to unfold — the quiet architecture behind every duel."
 date: "2025-11-07"
 tags:
-- game-dev
-- distributed-systems
-- architecture
-- reflection
+  # Domain
+  - trivia-duel
+  # Technology
+  - architecture
+  - distributed-systems
+  # Process / Meta
+  - reflection
+  - game-dev
 ---
 
 ### Epic continues — the duel begins
