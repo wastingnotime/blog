@@ -4,7 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"log"
+	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/aws/aws-lambda-go/events"
@@ -14,13 +16,13 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/sqs"
 )
 
-type PlausibleInput struct {
-	Name        string            `json:"name"`   // e.g. "pageview"
-	URL         string            `json:"url"`    // full URL
-	Domain      string            `json:"domain"` // e.g. "wastingnotime.org"
+type InboundEvent struct {
+	Name        string            `json:"name"`
+	URL         string            `json:"url"`
+	Domain      string            `json:"domain"`
 	Referrer    string            `json:"referrer"`
 	ScreenWidth int               `json:"screen_width"`
-	Props       map[string]string `json:"props"` // optional custom props
+	Props       map[string]string `json:"props"`
 }
 
 type QueueEvent struct {
@@ -31,8 +33,8 @@ type QueueEvent struct {
 	UserAgent   string            `json:"user_agent"`
 	ScreenWidth int               `json:"screen_width"`
 	IP          string            `json:"ip"`
+	Timestamp   string            `json:"timestamp"` // RFC3339
 	Props       map[string]string `json:"props"`
-	Timestamp   string            `json:"timestamp"`
 }
 
 var (
@@ -52,16 +54,38 @@ func init() {
 	}
 
 	sqsClient = sqs.NewFromConfig(cfg)
+	log.Printf("Lambda initialized. Queue URL: %s", queueURL)
 }
 
 func handler(ctx context.Context, req events.APIGatewayV2HTTPRequest) (events.APIGatewayV2HTTPResponse, error) {
-	var in PlausibleInput
-	if err := json.Unmarshal([]byte(req.Body), &in); err != nil {
-		log.Printf("invalid body: %v", err)
+	// Handle CORS preflight if it reaches Lambda (often API GW does this itself)
+	if strings.ToUpper(req.RequestContext.HTTP.Method) == http.MethodOptions {
 		return events.APIGatewayV2HTTPResponse{
-			StatusCode: 400,
-			Body:       `{"error":"invalid body"}`,
+			StatusCode: http.StatusNoContent,
+			Headers:    corsHeaders(),
 		}, nil
+	}
+
+	if req.Body == "" {
+		return errorResponse(http.StatusBadRequest, "empty body"), nil
+	}
+
+	var in InboundEvent
+	if err := json.Unmarshal([]byte(req.Body), &in); err != nil {
+		log.Printf("invalid JSON body: %v", err)
+		return errorResponse(http.StatusBadRequest, "invalid JSON"), nil
+	}
+
+	// Basic validation
+	if in.Name == "" || in.URL == "" || in.Domain == "" {
+		return errorResponse(http.StatusBadRequest, "name, url and domain are required"), nil
+	}
+
+	ua := req.Headers["user-agent"]
+	ip := extractIP(req)
+
+	if in.Props == nil {
+		in.Props = make(map[string]string)
 	}
 
 	ev := QueueEvent{
@@ -69,17 +93,17 @@ func handler(ctx context.Context, req events.APIGatewayV2HTTPRequest) (events.AP
 		Name:        in.Name,
 		URL:         in.URL,
 		Referrer:    in.Referrer,
-		UserAgent:   req.Headers["user-agent"],
+		UserAgent:   ua,
 		ScreenWidth: in.ScreenWidth,
-		IP:          req.RequestContext.HTTP.SourceIP,
-		Props:       in.Props,
+		IP:          ip,
 		Timestamp:   time.Now().UTC().Format(time.RFC3339),
+		Props:       in.Props,
 	}
 
 	bodyBytes, err := json.Marshal(ev)
 	if err != nil {
-		log.Printf("marshal error: %v", err)
-		return events.APIGatewayV2HTTPResponse{StatusCode: 500}, nil
+		log.Printf("failed to marshal queue event: %v", err)
+		return errorResponse(http.StatusInternalServerError, "internal error"), nil
 	}
 
 	_, err = sqsClient.SendMessage(ctx, &sqs.SendMessageInput{
@@ -87,18 +111,63 @@ func handler(ctx context.Context, req events.APIGatewayV2HTTPRequest) (events.AP
 		MessageBody: aws.String(string(bodyBytes)),
 	})
 	if err != nil {
-		log.Printf("failed to send to SQS: %v", err)
-		return events.APIGatewayV2HTTPResponse{StatusCode: 500}, nil
+		log.Printf("failed to send message to SQS: %v", err)
+		return errorResponse(http.StatusInternalServerError, "failed to queue event"), nil
 	}
 
+	respBody, _ := json.Marshal(map[string]string{
+		"status": "queued",
+	})
+
 	return events.APIGatewayV2HTTPResponse{
-		StatusCode: 202,
-		Headers: map[string]string{
-			"Access-Control-Allow-Origin":  "https://wastingnotime.org", // CORS
-			"Access-Control-Allow-Headers": "Content-Type",
-		},
-		Body: `{"status":"queued"}`,
+		StatusCode: http.StatusAccepted,
+		Body:       string(respBody),
+		Headers:    corsHeaders(),
 	}, nil
+}
+
+func extractIP(req events.APIGatewayV2HTTPRequest) string {
+	// Prefer X-Forwarded-For if present
+	if xff, ok := req.Headers["x-forwarded-for"]; ok && xff != "" {
+		parts := strings.Split(xff, ",")
+		if len(parts) > 0 {
+			return strings.TrimSpace(parts[0])
+		}
+	}
+
+	// Fallback to SourceIP from request context
+	if req.RequestContext.HTTP.SourceIP != "" {
+		return req.RequestContext.HTTP.SourceIP
+	}
+
+	return ""
+}
+
+func corsHeaders() map[string]string {
+	allowedOrigin := os.Getenv("ALLOWED_ORIGIN")
+	if allowedOrigin == "" {
+		// fallback – you can tighten this in prod
+		allowedOrigin = "*"
+	}
+
+	return map[string]string{
+		"Access-Control-Allow-Origin":      allowedOrigin,
+		"Access-Control-Allow-Methods":     "OPTIONS,POST",
+		"Access-Control-Allow-Headers":     "Content-Type",
+		"Access-Control-Allow-Credentials": "false",
+	}
+}
+
+func errorResponse(status int, msg string) events.APIGatewayV2HTTPResponse {
+	body, _ := json.Marshal(map[string]string{
+		"error": msg,
+	})
+
+	return events.APIGatewayV2HTTPResponse{
+		StatusCode: status,
+		Body:       string(body),
+		Headers:    corsHeaders(),
+	}
 }
 
 func main() {
