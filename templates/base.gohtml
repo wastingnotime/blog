@@ -231,15 +231,40 @@
     </style>
     {{ if .IsProd }}
         <!-- Privacy-friendly analytics by Plausible -->
-        <script async src="https://plausible.io/js/pa-2lsFn2vS18jqSs3R9h0G6.js"></script>
         <script>
-            window.plausible = window.plausible || function() {
-                (plausible.q = plausible.q || []).push(arguments)
-            };
-            plausible.init = plausible.init || function(i) {
-                plausible.o = i || {};
-            };
-            plausible.init();
+            (function () {
+                const API_URL = "https://wastingnotime.org/api/event";
+                const DOMAIN = "wastingnotime.org";
+
+                function sendPageview() {
+                    const payload = {
+                        name: "pageview",
+                        url: window.location.href,
+                        domain: DOMAIN,
+                        referrer: document.referrer || "",
+                        screen_width: window.innerWidth || screen.width,
+                        props: {
+                            path: window.location.pathname,
+                            title: document.title
+                        }
+                    };
+
+                    navigator.sendBeacon
+                        ? navigator.sendBeacon(API_URL, JSON.stringify(payload))
+                        : fetch(API_URL, {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify(payload),
+                            keepalive: true
+                        }).catch(function () {});
+                }
+
+                if (document.readyState === "complete") {
+                    sendPageview();
+                } else {
+                    window.addEventListener("load", sendPageview);
+                }
+            })();
         </script>
     {{ end }}
 </head>
