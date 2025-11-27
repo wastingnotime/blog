@@ -249,13 +249,13 @@
         <nav class="menu text-sm text-zinc-400">
             <a class="{{ if eq .Section "home" }}active{{ end }}" href="{{ href "/" }}">HOME</a>
             <span class="mx-2 text-zinc-600" aria-hidden="true">/</span>
-            <a class="{{ if eq .Section "studio" }}active{{ end }}" href="{{ href "/studio" }}">STUDIO</a>
+            <a class="{{ if eq .Section "studio" }}active{{ end }}" href="{{ href "/studio/" }}">STUDIO</a>
             <span class="mx-2 text-zinc-600" aria-hidden="true">/</span>
-            <a class="{{ if eq .Section "sagas" }}active{{ end }}" href="{{ href "/sagas" }}">SAGAS</a>
+            <a class="{{ if eq .Section "sagas" }}active{{ end }}" href="{{ href "/sagas/" }}">SAGAS</a>
             <span class="mx-2 text-zinc-600" aria-hidden="true">/</span>
-            <a class="{{ if eq .Section "library" }}active{{ end }}" href="{{ href "/library" }}">LIBRARY</a>
+            <a class="{{ if eq .Section "library" }}active{{ end }}" href="{{ href "/library/" }}">LIBRARY</a>
             <span class="mx-2 text-zinc-600" aria-hidden="true">/</span>
-            <a class="{{ if eq .Section "about" }}active{{ end }}" href="{{ href "/about" }}">ABOUT</a>
+            <a class="{{ if eq .Section "about" }}active{{ end }}" href="{{ href "/about/" }}">ABOUT</a>
             <span class="mx-2 text-zinc-600" aria-hidden="true">/</span>
             <a href="{{ href "/feed.xml" }}">RSS</a>
         </nav>
