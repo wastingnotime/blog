@@ -2,7 +2,7 @@
 title: "Designing the First API — /duel/start"
 type: "episode"
 saga: "Game Hub"
-arc: "Trivia Duel"
+arc: "the-first-breath"
 studio: "WastingNoTime Studio"
 status: "in progress"
 number: 4
@@ -89,7 +89,7 @@ import (
     "net/http"
     "time"
     "github.com/google/uuid"
-    "wastingnotime/gamehub/domain"
+	"github.com/wastingnotime/game-hub/domain"
 )
 
 func StartDuelHandler(w http.ResponseWriter, r *http.Request) {
