@@ -69,17 +69,49 @@ jobs:
     needs: build-and-push
     runs-on: ubuntu-latest
 
-    steps:
-      - name: ssh into Swarm manager and deploy
-        uses: appleboy/ssh-action@v1.2.0
-        with:
-          host: ${{ secrets.SWARM_SSH_HOST }}
-          username: ${{ secrets.SWARM_SSH_USER }}
-          key: ${{ secrets.SWARM_SSH_KEY }}
-          script: |
-            cd /opt/wnt/infra
-            git pull --ff-only
+    env:
+      SWARM_INSTANCE_ID: ${{ secrets.SWARM_INSTANCE_ID }}
 
-            # ingress + blog for now
-            docker stack deploy -c swarm/stacks/ingress.yml ingress
-            docker stack deploy -c swarm/stacks/blog.yml blog
+    steps:
+      - name: configure aws credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.ECR_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_DEFAULT_REGION }}
+
+      - name: trigger deploy via ssm
+        id: ssm
+        run: |
+          COMMAND_ID=$(aws ssm send-command \
+            --instance-ids "$SWARM_INSTANCE_ID" \
+            --document-name "AWS-RunShellScript" \
+            --comment "WNT deploy via inline commands" \
+            --parameters 'commands=[
+              "set -e",
+              "echo Running deploy on $(hostname) at $(date)",
+              "cd /opt/wnt/infra || { echo infra repo missing; exit 1; }",
+              "git fetch origin main",
+              "git reset --hard origin/main",
+              "aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 590183855481.dkr.ecr.us-east-1.amazonaws.com",
+              "docker network inspect wnt_net >/dev/null 2>&1 || docker network create --driver overlay wnt_net",
+              "docker stack deploy -c swarm/stacks/ingress.yml ingress",
+              "docker stack deploy -c swarm/stacks/blog.yml blog"
+            ]' \
+            --query "Command.CommandId" \
+            --output text)
+          
+          echo "command_id=$COMMAND_ID" >> $GITHUB_OUTPUT
+
+      - name: wait for command to finish
+        timeout-minutes: 5
+        run: |
+          aws ssm wait command-executed \
+            --command-id "${{ steps.ssm.outputs.command_id }}" \
+            --instance-id "$SWARM_INSTANCE_ID"
+
+      - name: show command output
+        run: |
+          aws ssm list-command-invocations \
+            --command-id "${{ steps.ssm.outputs.command_id }}" \
+            --details \
+            --output text
