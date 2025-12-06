@@ -16,13 +16,13 @@ concurrency:
   group: "pages"
   cancel-in-progress: false
 
+permissions:
+  contents: read
+  id-token: write
+
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
-
-    permissions:
-      contents: read
-      id-token: write
 
     steps:
       - name: checkout
@@ -64,3 +64,22 @@ jobs:
           platforms: linux/amd64,linux/arm64
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: ssh into Swarm manager and deploy
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.SWARM_SSH_HOST }}
+          username: ${{ secrets.SWARM_SSH_USER }}
+          key: ${{ secrets.SWARM_SSH_KEY }}
+          script: |
+            cd /opt/wnt/infra
+            git pull --ff-only
+
+            # ingress + blog for now
+            docker stack deploy -c swarm/stacks/ingress.yml ingress
+            docker stack deploy -c swarm/stacks/blog.yml blog
