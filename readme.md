@@ -34,3 +34,13 @@ export PLAUSIBLE_URL="http://localhost:8000/api/event"
 
 go run ./cmd/analytics-consumer
 ```
+
+
+## trying on docker
+
+```bash
+docker build . -t wastingnotime/blog:local
+ 
+docker run -p 8080:80 wastingnotime/blog:local
+
+```
