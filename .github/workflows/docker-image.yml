@@ -1,11 +1,19 @@
-# This workflow will build a golang project
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-go
-
-name: docker image
+name: docker – blog
 
 on:
   push:
     branches: [ "main" ]
+    paths:
+      - 'cmd/serve/**'
+      - 'cmd/build/**'
+      - 'cmd/migrate/**'
+      - 'internal/site/**'
+      - 'content/**'
+      - 'templates/**'
+      - 'dockerfile'
+      - 'go.mod'
+      - 'go.sum'
+      - '.github/workflows/docker-image.yml'
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -71,6 +79,8 @@ jobs:
 
     env:
       SWARM_INSTANCE_ID: ${{ secrets.SWARM_INSTANCE_ID }}
+      EVENT_QUEUE_URL: ${{ secrets.EVENT_QUEUE_URL_ANALYTICS }}
+      PLAUSIBLE_SHARED_SECRET: ${{ secrets.PLAUSIBLE_SHARED_SECRET_ANALYTICS }}
 
     steps:
       - name: configure aws credentials
@@ -82,24 +92,28 @@ jobs:
       - name: trigger deploy via ssm
         id: ssm
         run: |
+          commands=$(jq -cn \
+            --arg eq "$EVENT_QUEUE_URL" \
+            --arg pss "$PLAUSIBLE_SHARED_SECRET" '[
+            "set -e",
+            "echo Running deploy on $(hostname) at $(date)",
+            "cd /opt/wnt/infra || { echo infra repo missing; exit 1; }",
+            "git fetch origin main",
+            "git reset --hard origin/main",
+            "aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 590183855481.dkr.ecr.us-east-1.amazonaws.com",
+            "docker network inspect wnt_net >/dev/null 2>&1 || docker network create --driver overlay wnt_net",
+            "docker stack deploy -c swarm/stacks/ingress.yml ingress",
+            "EVENT_QUEUE_URL=\"" + $eq + "\" PLAUSIBLE_SHARED_SECRET=\"" + $pss + "\" docker stack deploy -c swarm/stacks/blog.yml blog"
+          ]')
+
           COMMAND_ID=$(aws ssm send-command \
             --instance-ids "$SWARM_INSTANCE_ID" \
             --document-name "AWS-RunShellScript" \
             --comment "WNT deploy via inline commands" \
-            --parameters 'commands=[
-              "set -e",
-              "echo Running deploy on $(hostname) at $(date)",
-              "cd /opt/wnt/infra || { echo infra repo missing; exit 1; }",
-              "git fetch origin main",
-              "git reset --hard origin/main",
-              "aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 590183855481.dkr.ecr.us-east-1.amazonaws.com",
-              "docker network inspect wnt_net >/dev/null 2>&1 || docker network create --driver overlay wnt_net",
-              "docker stack deploy -c swarm/stacks/ingress.yml ingress",
-              "docker stack deploy -c swarm/stacks/blog.yml blog"
-            ]' \
+            --parameters "commands=${commands}" \
             --query "Command.CommandId" \
             --output text)
-          
+
           echo "command_id=$COMMAND_ID" >> $GITHUB_OUTPUT
 
       - name: wait for command to finish

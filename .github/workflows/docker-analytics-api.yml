@@ -1,0 +1,82 @@
+name: docker – analytics-api
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - 'api/analytics/**'
+      - 'internal/analytics/**'
+      - 'go.mod'
+      - 'go.sum'
+      - '.github/workflows/docker-analytics-api.yml'
+
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  IMAGE_NAME: analytics-api
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: ${{ vars.AWS_DEFAULT_REGION }}
+          role-to-assume: ${{ secrets.ECR_ROLE_ARN }}
+          role-session-name: ${{ vars.ECR_ROLE_NAME }}
+
+      - name: login to ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: set up docker buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: build and push multi-arch image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: api/analytics/Dockerfile
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: |
+            ${{ env.IMAGE_NAME }}:latest
+            ${{ env.IMAGE_NAME }}:${{ github.sha }}
+
+      - name: deploy analytics-api to swarm
+        timeout-minutes: 5
+        if: github.ref == 'refs/heads/main'
+        env:
+          SWARM_INSTANCE_ID: ${{ secrets.SWARM_INSTANCE_ID }}
+          IMAGE: ${{ env.IMAGE_NAME }}:${{ github.sha }}
+          REGION: ${{ vars.AWS_DEFAULT_REGION }}
+        run: |
+          COMMAND_ID=$(aws ssm send-command \
+            --instance-ids "$SWARM_INSTANCE_ID" \
+            --document-name "AWS-RunShellScript" \
+            --comment "analytics-api deploy" \
+            --parameters 'commands=[
+              "set -e",
+              "echo Deploying analytics-api on $(hostname) at $(date)",
+              "aws ecr get-login-password --region '"$REGION"' | docker login --username AWS --password-stdin '"${IMAGE%%/*}"'",
+              "docker service update --with-registry-auth --image '"$IMAGE"' wnt_analytics-api"
+            ]' \
+            --query "Command.CommandId" \
+            --output text)
+
+          aws ssm wait command-executed \
+            --command-id "$COMMAND_ID" \
+            --instance-id "$SWARM_INSTANCE_ID"
+
+          aws ssm list-command-invocations \
+            --command-id "$COMMAND_ID" \
+            --details \
+            --output text
