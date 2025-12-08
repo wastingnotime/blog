@@ -23,6 +23,9 @@ jobs:
   build-and-push:
     runs-on: ubuntu-latest
 
+    outputs:
+      ecr_registry: ${{ steps.login-ecr.outputs.registry }}
+
     steps:
       - name: checkout
         uses: actions/checkout@v5
@@ -35,6 +38,7 @@ jobs:
           role-session-name: ${{ vars.ECR_ROLE_NAME }}
 
       - name: login to amazon ecr
+        id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
       - name: extract metadata
@@ -65,32 +69,67 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - name: deploy analytics-api to swarm
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+
+    env:
+      SWARM_INSTANCE_ID: ${{ secrets.SWARM_INSTANCE_ID }}
+      REGION: ${{ vars.AWS_DEFAULT_REGION }}
+
+    steps:
+      - name: configure aws credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: ${{ vars.AWS_DEFAULT_REGION }}
+          role-to-assume: ${{ secrets.ECR_ROLE_ARN }}
+          role-session-name: ${{ vars.ECR_ROLE_NAME }}
+
+      - name: trigger deploy via ssm
+        id: ssm
         timeout-minutes: 5
         if: github.ref == 'refs/heads/main'
         env:
           SWARM_INSTANCE_ID: ${{ secrets.SWARM_INSTANCE_ID }}
-          IMAGE: ${{steps.login-ecr.outputs.registry}}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+          IMAGE: ${{needs.build-and-push.outputs.ecr_registry}}/${{ env.IMAGE_NAME }}:${{ github.sha }}
           REGION: ${{ vars.AWS_DEFAULT_REGION }}
+          EVENT_QUEUE_URL: ${{ secrets.EVENT_QUEUE_URL_ANALYTICS }}
+          PLAUSIBLE_SHARED_SECRET: ${{ secrets.PLAUSIBLE_SHARED_SECRET_ANALYTICS }}
+
         run: |
+          set -euo pipefail
+          : "${SWARM_INSTANCE_ID:?missing}"
+          : "${IMAGE:?missing}"
+          : "${REGION:?missing}"
+  
           COMMAND_ID=$(aws ssm send-command \
             --instance-ids "$SWARM_INSTANCE_ID" \
             --document-name "AWS-RunShellScript" \
             --comment "analytics-api deploy" \
             --parameters 'commands=[
               "set -e",
-              "echo Deploying analytics-api on $(hostname) at $(date)",
-              "aws ecr get-login-password --region '"$REGION"' | docker login --username AWS --password-stdin '"${IMAGE%%/*}"'",
-              "docker stack deploy -c swarm/stacks/analytics.yml analytics-api",
+              "echo Running deploy on $(hostname) at $(date)",
+              "cd /opt/wnt/infra || { echo infra repo missing; exit 1; }",
+              "git fetch origin main",
+              "git reset --hard origin/main",
+              "aws ecr get-login-password --region '"${REGION}"' | docker login --username AWS --password-stdin '"${IMAGE%%/*}"'",
+              "AWS_REGION='"${REGION}"' ANALYTICS_API_IMAGE='"${IMAGE}"' EVENT_QUEUE_URL='"${EVENT_QUEUE_URL}"' PLAUSIBLE_SHARED_SECRET='"${PLAUSIBLE_SHARED_SECRET}"' docker stack deploy -c swarm/stacks/analytics.yml analytics-api"
             ]' \
             --query "Command.CommandId" \
             --output text)
 
+          echo "command_id=$COMMAND_ID" >> $GITHUB_OUTPUT
+
+      - name: wait for command to finish
+        timeout-minutes: 5
+        run: |
           aws ssm wait command-executed \
-            --command-id "$COMMAND_ID" \
+            --command-id "${{ steps.ssm.outputs.command_id }}" \
             --instance-id "$SWARM_INSTANCE_ID"
 
+      - name: show command output
+        run: |
           aws ssm list-command-invocations \
-            --command-id "$COMMAND_ID" \
+            --command-id "${{ steps.ssm.outputs.command_id }}" \
             --details \
             --output text
