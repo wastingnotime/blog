@@ -35,6 +35,7 @@ jobs:
           role-session-name: ${{ vars.ECR_ROLE_NAME }}
 
       - name: login to amazon ecr
+        id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
       - name: extract metadata
