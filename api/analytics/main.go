@@ -2,7 +2,9 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
+	"io"
 	"log"
 	"net"
 	"net/http"
@@ -59,8 +61,21 @@ func main() {
 		}
 
 		var in eventsink.InboundEvent
-		if err := c.Bind(&in); err != nil {
-			return echo.NewHTTPError(http.StatusBadRequest, "invalid JSON")
+
+		ct := c.Request().Header.Get(echo.HeaderContentType)
+		ct = strings.ToLower(strings.TrimSpace(strings.Split(ct, ";")[0]))
+
+		// plausible (and similar) often sends JSON with text/plain to avoid CORS preflight.
+		if ct == "application/json" || strings.HasSuffix(ct, "+json") || ct == "text/plain" {
+			b, err := io.ReadAll(c.Request().Body)
+			if err != nil {
+				return echo.NewHTTPError(http.StatusBadRequest, "cannot read body")
+			}
+			if err := json.Unmarshal(b, &in); err != nil {
+				return echo.NewHTTPError(http.StatusBadRequest, "invalid JSON")
+			}
+		} else {
+			return echo.NewHTTPError(http.StatusUnsupportedMediaType, "unsupported content-type")
 		}
 
 		meta := eventsink.Meta{
