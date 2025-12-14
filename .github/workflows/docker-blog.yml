@@ -115,7 +115,7 @@ jobs:
             "git fetch origin main",
             "git reset --hard origin/main",
             "aws ecr get-login-password --region '"${REGION}"' | docker login --username AWS --password-stdin '"${IMAGE%%/*}"'",
-            "BLOG_IMAGE=\"" + $im + "\" EVENT_QUEUE_URL=\"" + $eq + "\" PLAUSIBLE_SHARED_SECRET=\"" + $pss + "\" docker stack deploy -c swarm/stacks/blog.yml blog"
+            "BLOG_IMAGE=\"" + $im + "\" EVENT_QUEUE_URL=\"" + $eq + "\" PLAUSIBLE_SHARED_SECRET=\"" + $pss + "\" docker stack deploy -c swarm/stacks/blog.yml --with-registry-auth blog"
           ]')
 
           COMMAND_ID=$(aws ssm send-command \

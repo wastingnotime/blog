@@ -105,7 +105,7 @@ jobs:
               "git fetch origin main",
               "git reset --hard origin/main",
               "aws ecr get-login-password --region '"${REGION}"' | docker login --username AWS --password-stdin '"${IMAGE%%/*}"'",
-              "AWS_REGION='"${REGION}"' ANALYTICS_API_IMAGE='"${IMAGE}"' EVENT_QUEUE_URL='"${EVENT_QUEUE_URL}"' PLAUSIBLE_SHARED_SECRET='"${PLAUSIBLE_SHARED_SECRET}"' docker stack deploy -c swarm/stacks/analytics.yml analytics-api"
+              "AWS_REGION='"${REGION}"' ANALYTICS_API_IMAGE='"${IMAGE}"' EVENT_QUEUE_URL='"${EVENT_QUEUE_URL}"' PLAUSIBLE_SHARED_SECRET='"${PLAUSIBLE_SHARED_SECRET}"' docker stack deploy -c swarm/stacks/analytics.yml --with-registry-auth  analytics-api"
             ]' \
             --query "Command.CommandId" \
             --output text)
