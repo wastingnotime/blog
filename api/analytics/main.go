@@ -65,14 +65,21 @@ func main() {
 		ct := c.Request().Header.Get(echo.HeaderContentType)
 		ct = strings.ToLower(strings.TrimSpace(strings.Split(ct, ";")[0]))
 
+		rawCT := c.Request().Header.Get(echo.HeaderContentType)
+		normCT := strings.ToLower(strings.TrimSpace(strings.Split(rawCT, ";")[0]))
+		c.Logger().Infof("raw Content-Type=%q norm=%q", rawCT, normCT)
+
 		// plausible (and similar) often sends JSON with text/plain to avoid CORS preflight.
 		if ct == "application/json" || strings.HasSuffix(ct, "+json") || ct == "text/plain" {
 			b, err := io.ReadAll(c.Request().Body)
 			if err != nil {
 				return echo.NewHTTPError(http.StatusBadRequest, "cannot read body")
 			}
+			c.Logger().Infof("body len=%d first=%q", len(b), string(b[:min(200, len(b))]))
+
 			if err := json.Unmarshal(b, &in); err != nil {
-				return echo.NewHTTPError(http.StatusBadRequest, "invalid JSON")
+				c.Logger().Errorf("json unmarshal error: %v body=%q", err, string(b))
+				return echo.NewHTTPError(http.StatusBadRequest, "invalid JSON: "+err.Error())
 			}
 		} else {
 			return echo.NewHTTPError(http.StatusUnsupportedMediaType, "unsupported content-type")
