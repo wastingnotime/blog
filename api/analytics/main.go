@@ -31,12 +31,19 @@ func main() {
 		port = "8080"
 	}
 
+	region := os.Getenv("AWS_REGION")
+	if region == "" {
+		log.Fatal("AWS_REGION is required")
+	}
+
 	sharedSecret := os.Getenv("PLAUSIBLE_SHARED_SECRET")
 
 	awsCfg, err := config.LoadDefaultConfig(context.Background())
 	if err != nil {
 		log.Fatalf("failed to load AWS config: %v", err)
 	}
+
+	awsCfg.Region = region
 
 	processor := eventsink.NewProcessor(sqs.NewFromConfig(awsCfg), queueURL)
 
