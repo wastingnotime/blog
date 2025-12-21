@@ -16,8 +16,7 @@ tags:
   - system-design
   - event-driven
 ---
-
-#### Identifying Our First Services
+### Identifying Our First Services
 
 Now that the actors are mapped, the natural next step is to ask a deceptively simple question:
 
@@ -59,7 +58,7 @@ Let’s process them one by one with WNT’s “calm, deliberate” approach.
 
 ---
 
-##### 1. Identity & Roles
+#### 1. Identity & Roles
 
 We identified earlier that we have four roles:
 
@@ -74,7 +73,7 @@ We identified earlier that we have four roles:
 
 This already defines our first service:
 
-###### Identity Service
+##### Identity Service
 
 **Responsibility:**
 
@@ -100,7 +99,7 @@ So the Identity Service is not optional — it is the gatekeeper.
 
 ---
 
-##### 2. Company & Job Management
+#### 2. Company & Job Management
 
 Companies create job postings.  
 Recruiters manage them.  
@@ -108,7 +107,7 @@ Candidates apply to them.
 
 This gives us a second clear boundary:
 
-###### Company-Jobs Service
+##### Company-Jobs Service
 
 **Responsibility:**
 
@@ -130,11 +129,11 @@ It evolves independently from candidates or evaluations.
 
 ---
 
-##### 3. Candidates Service
+#### 3. Candidates Service
 
 Candidates are not just entities — they have profiles, histories, resumes, preferences.
 
-###### Candidates Service
+##### Candidates Service
 
 **Responsibility:**
 
@@ -154,12 +153,12 @@ This avoids mixing candidate information with job or application information, wh
 
 ---
 
-##### 4. Applications Service
+#### 4. Applications Service
 
 The heart of the hiring flow:  
 A candidate applies, a recruiter evaluates, a decision is made.
 
-###### Applications Service
+##### Applications Service
 
 **Responsibility:**
 
@@ -180,11 +179,11 @@ Separating applications keeps the rest of the system clean.
 
 ---
 
-##### 5. Notifications Service
+#### 5. Notifications Service
 
 Whenever certain events happen — application submitted, recruiter invited — someone needs to be notified.
 
-###### Notifications Service
+##### Notifications Service
 
 **Responsibility:**
 
@@ -202,11 +201,11 @@ This service listens to events (RabbitMQ in our architecture) and emits notifica
 
 ---
 
-##### 6. Search Service
+#### 6. Search Service
 
 Across companies, jobs, and candidates, search becomes an important operational capability.
 
-###### Search Service
+##### Search Service
 
 **Responsibility:**
 
@@ -224,11 +223,11 @@ This service _does not store source of truth data_ — it mirrors other domains 
 
 ---
 
-##### 7. Gateway
+#### 7. Gateway
 
 Even though it is not a domain service, the system needs a stable entry point.
 
-###### Gateway
+##### Gateway
 
 **Responsibility:**
 
@@ -248,12 +247,12 @@ It is the front door.
 
 ---
 
-##### 8. Timer / Automated Workflows
+#### 8. Timer / Automated Workflows
 
 Timers trigger cleanup routines, periodic evaluations, or automated transitions.  
 These are orchestrated not inside the services but through scheduled messages.
 
-###### Workflow Scheduler
+##### Workflow Scheduler
 
 Not exactly a “service”, but a mechanism:
 
@@ -271,7 +270,7 @@ This could be implemented with Kubernetes CronJobs, or a lightweight internal sc
 
 ---
 
-#### Current Map (Early Draft)
+### Current Map (Early Draft)
 
 By now, the system begins to reveal its natural structure:
 

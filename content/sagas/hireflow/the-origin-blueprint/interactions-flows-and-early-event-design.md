@@ -16,8 +16,7 @@ tags:
   - architecture
   - message-bus
 ---
-
-#### Interactions, Flows & Early Event Design
+### Interactions, Flows & Early Event Design
 
 Now that the system’s boundaries exist on the map, another question appears — and it is one of the most important in any distributed architecture:
 
@@ -32,7 +31,7 @@ So in this episode, we take the first step into that space.
 
 ---
 
-##### 1. Two Ways to Interact: Direct Calls vs. Events
+#### 1. Two Ways to Interact: Direct Calls vs. Events
 
 In any distributed system, there are only two fundamental coordination patterns:
 
@@ -84,7 +83,7 @@ Events give the system space to breathe.
 
 ---
 
-##### 2. Designing the First Critical Flow: The Happy Path
+#### 2. Designing the First Critical Flow: The Happy Path
 
 Milestone 1 is the “Happy Path.”  
 The simplest complete scenario a user experiences:
@@ -107,7 +106,7 @@ Let’s break it down service by service.
 
 ---
 
-##### Step 1 — Company Admin Creates a Job
+#### Step 1 — Company Admin Creates a Job
 
 **Actor:** Company Admin  
 **Entry:** Gateway → Company-Jobs Service
@@ -142,7 +141,7 @@ job.created
 
 ---
 
-##### Step 2 — Candidate Applies
+#### Step 2 — Candidate Applies
 
 **Actor:** Candidate  
 **Entry:** Gateway → Applications Service
@@ -177,7 +176,7 @@ This event becomes the heart of the hiring workflow.
 
 ---
 
-##### Step 3 — Recruiter Visibility
+#### Step 3 — Recruiter Visibility
 
 Recruiters consume the application list from Applications Service via the Gateway.
 
@@ -203,7 +202,7 @@ This ensures that the flow remains stable even if one service is down.
 
 ---
 
-##### Step 4 — Notifications Triggered
+#### Step 4 — Notifications Triggered
 
 Notifications Service subscribes to many early events, but one is foundational:
 
@@ -223,7 +222,7 @@ This also allows throttling, retry strategies, and idempotency — all crucial f
 
 ---
 
-##### Step 5 — Search Updates
+#### Step 5 — Search Updates
 
 Search does not call anyone.  
 Search listens.
@@ -257,7 +256,7 @@ This is not the final design, but it captures the spirit:
 
 ---
 
-##### 3. Event Naming Conventions (Early Version)
+#### 3. Event Naming Conventions (Early Version)
 
 Simple. Verb past tense. Domain-prefixed.
 
@@ -282,20 +281,20 @@ because events should evolve by payload, not name.
 
 ---
 
-##### 4. Event Contracts: The Early Philosophy
+#### 4. Event Contracts: The Early Philosophy
 
 At this early stage, our contracts follow three rules:
 
-###### Rule 1 — Minimal but Sufficient
+##### Rule 1 — Minimal but Sufficient
 
 Include only what other services truly need.  
 If something can be fetched by ID later, send IDs.
 
-###### Rule 2 — Never Break Consumers
+##### Rule 2 — Never Break Consumers
 
 If an event must evolve, extend the payload — do not change meaning.
 
-###### Rule 3 — Events Describe Facts, Not Commands
+##### Rule 3 — Events Describe Facts, Not Commands
 
 Events are past tense.  
 They announce what happened, not what should happen.
@@ -304,7 +303,7 @@ This keeps publishers honest and consumers stable.
 
 ---
 
-##### 5. Fault Tolerance at the Edges
+#### 5. Fault Tolerance at the Edges
 
 One of the early questions we must answer:
 
@@ -324,7 +323,7 @@ It’s not perfect, but it’s reliable.
 
 ---
 
-##### 6. The First Architecture Flow
+#### 6. The First Architecture Flow
 
 Here’s the distilled early picture — the skeleton that Milestone 1 will bring to life:
 
@@ -352,7 +351,7 @@ Large enough to reveal its nature.
 
 ---
 
-##### Closing Reflection
+#### Closing Reflection
 
 Interaction design is not about drawing arrows.  
 It is about understanding _who depends on what_  

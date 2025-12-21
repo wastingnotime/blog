@@ -15,7 +15,6 @@ tags:
   - engineering-journal
   - hireflow
 ---
-
 ### The First Brick
 
 In the last five years I’ve been building microservices applications. It’s a wonderful architectural style for systems that need to scale, evolve, and survive failure. But—as Uncle Ben would say—**“with great power comes great responsibility.”** Microservices look elegant from the outside, but inside them live drivers, constraints, and trade-offs that shape every decision.
