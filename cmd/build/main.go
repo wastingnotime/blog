@@ -564,6 +564,18 @@ func main() {
 	if err := writeSearchIndex(cfg, sagas); err != nil {
 		log.Fatalf("write search index: %v", err)
 	}
+
+	// --- assets ---
+	// guard
+	if _, err := os.Stat("assets/site/current/favicon.ico"); err != nil {
+		log.Fatal("missing favicon.ico in assets/site/current")
+	}
+	// copy
+	if err := site.CopyDir("assets/site/current", "public"); err != nil {
+		log.Fatalf("copy site assets: %v", err)
+	}
+	log.Println("✔ site assets copied to public/")
+
 }
 
 // ---- utilities ----
