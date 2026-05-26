@@ -34,3 +34,49 @@ Use tests as specification. Start with domain tests, add integration tests for m
 ## Commit & Pull Request Guidelines
 Use Conventional Commits for commit subjects, choosing an appropriate type such as `feat`, `fix`, `docs`, `refactor`, `test`, `build`, `ci`, or `chore`. Keep commits scoped to one slice or doc change, and include test evidence in pull requests.
 After each completed change, create the commit before moving on to the next task.
+
+<!-- mrl-cli patch start: AGENTS.md -->
+# Repository Guidelines
+
+## Scope
+This file guides contributors working in this repository or an adopting project instance. It does not define MRL core behavior; core workflow guidance lives in `docs/operating/`.
+
+## Project Structure & Module Organization
+This repository is a private WNT extension overlay for MRL. Strategic docs live at the root and overlay material lives under `docs/`, `skills/`, `references/`, `templates/`, `agents/`, `contracts/`, `observability/`, `infra/`, and `codex/`.
+
+Root strategic docs describe the current repository or adopting project instance. MRL core behavior lives in `docs/operating/` and should stay generic, portable, and operationally agnostic.
+
+On the first pass through this repository's guidance, review `architecture.md`, `groundrules.md`, and the current overlay files before substantial project-specific work.
+
+Use this structure as the default overlay shape:
+
+```text
+skills/
+references/
+templates/
+agents/
+contracts/
+observability/
+infra/
+codex/
+docs/operating/
+```
+
+Record structural deviations in `decisions.md`.
+
+## Build, Test, and Development Commands
+Keep tooling lightweight until the first overlay slice exists.
+
+- `git status --short` inspects pending edits before commits.
+- `git diff --check` catches whitespace and patch formatting issues.
+- `mrl-cli --help` validates the installer/overlay CLI when it is available in the local environment.
+
+## Coding Style & Naming Conventions
+Prefer Python 3.12+, explicit types, 4-space indentation, and business-oriented names. Use verb-driven use cases such as `PlaceOrder` and intention-revealing repositories such as `get_by_id` and `save`.
+
+## Testing Guidelines
+Use tests as specification. Start with domain tests, add integration tests for mappings and end-to-end flows, and keep time, IDs, and external responses deterministic.
+
+## Commit & Pull Request Guidelines
+Use Conventional Commits for commit subjects, choosing an appropriate type such as `feat`, `fix`, `docs`, `refactor`, `test`, `build`, `ci`, or `chore`. Commit after every completed and verified change before starting unrelated work. Keep commits scoped to one request, slice, or doc change, and include test evidence in pull requests.
+<!-- mrl-cli patch end: AGENTS.md -->
