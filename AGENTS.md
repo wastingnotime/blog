@@ -47,6 +47,7 @@ This repository is a private WNT extension overlay for MRL. Strategic docs live 
 Root strategic docs describe the current repository or adopting project instance. MRL core behavior lives in `docs/operating/` and should stay generic, portable, and operationally agnostic.
 
 On the first pass through this repository's guidance, review `architecture.md`, `groundrules.md`, and the current overlay files before substantial project-specific work.
+For delivery or production-status questions, read `docs/operating/release_delivery_validation.md` and treat infra-owned deployment manifests plus immutable artifact digests as production truth.
 
 Use this structure as the default overlay shape:
 
@@ -70,6 +71,7 @@ Keep tooling lightweight until the first overlay slice exists.
 - `git status --short` inspects pending edits before commits.
 - `git diff --check` catches whitespace and patch formatting issues.
 - `mrl-cli --help` validates the installer/overlay CLI when it is available in the local environment.
+- `mrl-cli sync --source ../mrl-extension-wnt --target .` refreshes installed WNT guidance in a consuming repository when run from that repository.
 
 ## Coding Style & Naming Conventions
 Prefer Python 3.12+, explicit types, 4-space indentation, and business-oriented names. Use verb-driven use cases such as `PlaceOrder` and intention-revealing repositories such as `get_by_id` and `save`.
