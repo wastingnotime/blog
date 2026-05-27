@@ -1,8 +1,13 @@
-# Pack: event_sourced_domain
+# WNT Pack Extension: event_sourced_domain
 
 ## Purpose
 
 Use this pack when the primary model is represented through events, streams, projections, and replayable state transitions.
+
+## Scope
+
+This pack extension defines WNT-owned implementation defaults.
+It does not define MRL core behavior or project-specific domain behavior.
 
 ---
 

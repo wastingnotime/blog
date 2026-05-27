@@ -45,9 +45,9 @@ Do not claim production deployment unless the production deployment manifest or 
 - `<missing downstream confirmation>`
 - `<missing release notes, integration summary, or production digest trace>`
 
-## Next Loop Impact
+## Follow-Up Evidence
 
-- continue to `feedback`
-- return to `extract`
-- return to `refine`
-- return to `build`
+- record new runtime, stakeholder, operator, or consumer signals as source evidence for the next `extract` pass
+- return to `extract` when the exposure reveals new facts, friction, surprises, drift, or feedback
+- return to `refine` only after extracted evidence changes the model or request boundary
+- return to `build` only after refinement identifies an implementation slice

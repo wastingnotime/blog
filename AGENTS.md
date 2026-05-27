@@ -47,7 +47,7 @@ This repository is a private WNT extension overlay for MRL. Strategic docs live 
 Root strategic docs describe the current repository or adopting project instance. MRL core behavior lives in `docs/operating/` and should stay generic, portable, and operationally agnostic.
 
 On the first pass through this repository's guidance, review `architecture.md`, `groundrules.md`, and the current overlay files before substantial project-specific work.
-For delivery or production-status questions, read `docs/operating/release_delivery_validation.md` and treat infra-owned deployment manifests plus immutable artifact digests as production truth.
+For delivery or production-status questions, read `docs/operating/extensions/wnt/release_delivery_validation.md` and treat infra-owned deployment manifests plus immutable artifact digests as production truth.
 
 Use this structure as the default overlay shape:
 

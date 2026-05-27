@@ -10,6 +10,12 @@ The goal is to separate:
 - active dependency interruption
 - runtime incident response
 
+## Authority
+
+This document owns the WNT channel model and coordination routing rules.
+
+Workflow-specific documents, such as `docs/operating/extensions/wnt/cross_repo_findings_guidance.md`, may define how to execute a specific workflow, but they must defer to this protocol for channel selection, urgency, and coordination ownership.
+
 ## Channels
 
 | Channel | ID | Purpose |

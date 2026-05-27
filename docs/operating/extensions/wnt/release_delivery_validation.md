@@ -1,4 +1,4 @@
-# Release Delivery And Validation
+# WNT Release Delivery And Validation
 
 ## Purpose
 
@@ -11,6 +11,28 @@ This guidance defines how WNT repositories should record delivery facts so opera
 - which dependencies or anomalies affected delivery
 
 Each artifact has one responsibility. Do not overload issues, deployment manifests, release notes, or validation reports with meanings owned by another artifact.
+
+This document is WNT extension guidance. It explains how to trace delivery facts across the repositories that own them.
+
+## Authority
+
+Delivery validation authority is split by repository:
+
+- producing repository: release decision, release notes, candidate image metadata, exposed contract references, and exposure evidence
+- `integration-sandbox`: candidate validation, validation run evidence, validation result, and promotion handoff evidence
+- `infra-platform`: ECR registry authority, Swarm runtime, deployment manifests, production desired state, and production promotion decision
+
+If validation guidance here conflicts with `integration-sandbox` contracts, `integration-sandbox` wins for validation.
+If production guidance here conflicts with `infra-platform` contracts, `infra-platform` wins for registry, deployment, Swarm runtime, and production status.
+
+Read:
+
+- `integration-sandbox/contracts/deployment/candidate-validation-handoff.md`
+- `integration-sandbox/contracts/test-scenarios/README.md`
+- `integration-sandbox/contracts/runtime/README.md`
+- `infra-platform/docs/contracts/deployment/production-promotion-authority.md`
+- `infra-platform/docs/contracts/integration-guidance.md`
+- `infra-platform/docs/contracts/swarm/swarm-runtime-contract.md`
 
 ---
 
@@ -113,7 +135,9 @@ They should include:
 
 The integration summary answers whether a version was validated. It does not decide deployment, replace release notes, or become campaign memory.
 
-Use `work/changes/_template/integration_summary.md` as the baseline shape when recording local validation summaries or when preparing a handoff to `integration-sandbox`.
+Use `work/changes/_template/integration_summary.md` as the baseline shape when recording local validation summaries or when preparing a request for `integration-sandbox`.
+
+For production-bound container images, the authoritative validation output is the validation run and promotion handoff evidence emitted by `integration-sandbox`.
 
 ---
 
@@ -142,10 +166,10 @@ Use this default flow when a WNT repository delivers a runtime artifact:
 Repository Change
     -> CI Build
     -> Integration Sandbox Validation
-    -> Integration Summary
+    -> Validation Result And Promotion Handoff
     -> Release Notes
-    -> Infrastructure PR
-    -> Deployment Manifest Update
+    -> Infra-Platform Promotion Decision
+    -> Deployment Manifest Update When Accepted
     -> Rollout Observation
 ```
 
@@ -158,8 +182,8 @@ The exact automation may differ by repository, but the artifact responsibilities
 | Repository type | Responsibility |
 |---|---|
 | application repository | build artifacts, release notes, image metadata, exposure evidence |
-| integration-sandbox | ecosystem validation summaries |
-| infra-platform | deployment truth and production manifest state |
+| integration-sandbox | ecosystem validation runs, validation results, and promotion handoff evidence |
+| infra-platform | registry authority, Swarm runtime, deployment truth, and production manifest state |
 | management | campaign coordination and durable cross-repository memory |
 | observing repository | findings |
 | blocked repository | blockers |

@@ -1,11 +1,11 @@
-# Cross-Repository Findings Handling (MRL-Starter)
+# WNT Cross-Repository Findings Handling
 
 ## Purpose
 
 Define how a repository should handle **findings discovered locally** that impact other repositories.
 
 Findings and campaigns belong in `#coordination`. Blockers belong in `#blockers`. Runtime incidents belong in `#ops-alerts`.
-See [`docs/operating/inter_repository_coordination_protocol.md`](inter_repository_coordination_protocol.md) for the full channel model.
+See `docs/operating/extensions/wnt/inter_repository_coordination_protocol.md` for the full channel model.
 The `#ops-alerts` contract is infra-platform owned and is not opened directly by this repository.
 
 This avoids:
@@ -19,6 +19,13 @@ This avoids:
 ## Core Principle
 
 > A repository can observe and report a problem, but only the owning repository should define and implement the fix.
+
+## Authority
+
+`docs/operating/extensions/wnt/inter_repository_coordination_protocol.md` owns the channel model and cross-repository coordination authority.
+This document owns the findings and blockers workflow.
+
+If this document and the coordination protocol disagree about channels, urgency, or ownership routing, the coordination protocol wins.
 
 ---
 
@@ -211,7 +218,7 @@ The discovering repository may:
 
 The discovering repository issue is the runtime source of truth for the finding's lifecycle. When it closes, send a completion message to `#coordination` (`1502714561923383296`) for findings or `#blockers` (`1502715067186024628`) for blockers.
 
-Target repository PR handling is defined in [`references/target_repository_pr_handling.md`](../../references/target_repository_pr_handling.md). Non-code resolution handling is defined in [`references/target_repository_resolution.md`](../../references/target_repository_resolution.md). False-positive handling is defined in [`references/target_repository_false_positive.md`](../../references/target_repository_false_positive.md).
+Target repository PR handling is defined in `.agents/references/target_repository_pr_handling.md`. Non-code resolution handling is defined in `.agents/references/target_repository_resolution.md`. False-positive handling is defined in `.agents/references/target_repository_false_positive.md`.
 
 The discovering repository must NOT:
 

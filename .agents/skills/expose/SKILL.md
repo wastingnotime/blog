@@ -1,37 +1,46 @@
 ---
 name: expose
-description: Prepare or record exposure of a released slice to a real context in the MRL loop. Use when the internal released state is accepted and the next step is to define or capture how that state is exposed to users, stakeholders, workflows, or environments without treating this as long-term operations ownership.
+description: Record WNT post-release exposure evidence after a release decision is accepted. Use when an accepted release needs publication, infrastructure handoff, rollout evidence, or explicit exposure-boundary documentation without treating exposure as an MRL core phase or long-term operations ownership.
 ---
 
 # Mission
 
-Define or record how a released slice is put into contact with reality.
+Record how an accepted release is put into contact with a real WNT context.
 
 # Read First
 
-- `docs/operating/skills_workflow.md`
+- `docs/operating/expose_extensions.md`
+- `docs/operating/extensions/wnt/expose_aws_ecr_infra_pr.md` when the repository uses the WNT AWS ECR, integration validation, and infra promotion path
+- `docs/operating/extensions/wnt/release_delivery_validation.md`
 - `work/changes/<id>/release_decision.md`
-- relevant slice and implementation artifacts
+- relevant release notes and integration summary artifacts
 
 # Inputs
 
-- released version state
-- exposure target or context
-- release decision
+- accepted release decision
+- released version or immutable artifact digest
+- exposure target and completion boundary
+- publication or handoff evidence when available
+- release notes and integration summary references when applicable
 
 # Must Do
 
-- describe the exposure target clearly
-- record the exposure event or plan
-- make the expected feedback channels explicit
+- confirm exposure starts from an accepted release
+- name the exposure extension or repository-specific exposure path
+- record the exposure boundary reached
+- record publication, handoff, deployment-manifest, and digest evidence without conflating their responsibilities
+- state when production rollout is not yet proven
+- route runtime, stakeholder, operator, or downstream signals into evidence for a later `extract` pass
 
 # Must Not Do
 
-- do not treat this as general operations ownership
-- do not confuse exposure with release itself
-- do not silently mutate the model during exposure planning
+- do not redefine the MRL core loop
+- do not treat exposure as release acceptance
+- do not claim production deployment without infrastructure-owned manifest or environment evidence plus immutable digest
+- do not patch behavior directly from exposure feedback without first recording evidence and choosing the next loop entry point
+- do not act as long-term operations ownership
 
 # Outputs
 
-- optional `work/changes/<id>/exposure.md`
-- exposure event or exposure plan
+- `work/changes/<id>/exposure.md` when exposure is planned, partial, completed, or blocked
+- evidence references for publication, handoff, deployment truth, and follow-up extraction
