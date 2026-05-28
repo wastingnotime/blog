@@ -1,9 +1,9 @@
 overlay:
   name: mrl-extension-wnt
-  version: 0.1.12
+  version: 0.1.13
   source: git
-  source_ref: f0a6c01e5b9866c2cd7c9ddee647a5c6240e4452
+  source_ref: 1bcb19c201e28497be25841748cdf8a1c4e97bc3
   manifest_path: manifest.yaml
-installed_at: '2026-05-27T20:22:46Z'
+installed_at: '2026-05-28T03:38:22Z'
 installed_by: mrl-cli
 policy: explicit

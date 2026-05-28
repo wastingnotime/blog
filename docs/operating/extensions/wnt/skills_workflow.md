@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This document extends `docs/operating/skills_workflow.md` for WNT-managed repositories.
+This document extends the consuming repository's MRL core `docs/operating/skills_workflow.md` guidance for WNT-managed repositories.
 
 The core skills workflow stays portable. This extension captures WNT-specific lifecycle skill guidance after release acceptance.
 
@@ -13,7 +13,7 @@ It does not redefine the MRL core loop.
 
 Use it with:
 
-- `docs/operating/skills_workflow.md`
+- core skills workflow in consuming repositories: `docs/operating/skills_workflow.md`
 - `docs/operating/expose_extensions.md`
 - `docs/operating/extensions/wnt/expose_aws_ecr_infra_pr.md`
 - `docs/operating/extensions/wnt/release_delivery_validation.md`

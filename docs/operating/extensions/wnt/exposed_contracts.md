@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This document extends `docs/operating/exposed_contracts.md` for WNT-managed repositories.
+This document extends the consuming repository's MRL core `docs/operating/exposed_contracts.md` guidance for WNT-managed repositories.
 
 The core exposed-contracts guidance stays portable. This extension captures the WNT-specific operating rule for repositories whose released artifacts are consumed by other WNT repositories, infrastructure, operators, or external workflows.
 
@@ -86,7 +86,7 @@ For the WNT AWS ECR, integration validation, and infra promotion path, use this 
 
 ## Related Files
 
-- core guidance: `docs/operating/exposed_contracts.md`
+- core guidance in consuming repositories: `docs/operating/exposed_contracts.md`
 - WNT exposure guidance: `docs/operating/expose_extensions.md`
 - AWS ECR, integration validation, and infra promotion extension: `docs/operating/extensions/wnt/expose_aws_ecr_infra_pr.md`
 - WNT release delivery validation: `docs/operating/extensions/wnt/release_delivery_validation.md`
