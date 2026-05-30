@@ -2,13 +2,14 @@
 
 ## Purpose
 
-This repository uses a three-channel coordination model for the WNT ecosystem.
+This repository uses a four-channel coordination model for the WNT ecosystem.
 
 The goal is to separate:
 
 - slow coordination
 - active dependency interruption
 - runtime incident response
+- management visibility
 
 ## Authority
 
@@ -23,6 +24,7 @@ Workflow-specific documents, such as `docs/operating/extensions/wnt/cross_repo_f
 | `#coordination` | `1502714561923383296` | Cross-repository coordination, campaigns, findings, migrations, compatibility notices, and architecture evolution |
 | `#blockers` | `1502715067186024628` | Active dependency interruption between repositories |
 | `#ops-alerts` | infra-platform contract | Runtime infrastructure and production remediation |
+| `#management` | `1509567107891986644` | Repository introductions and management-visible facts that management may classify or record at its own boundary |
 
 ## Meaning
 
@@ -72,12 +74,25 @@ This channel is runtime focused and interruption critical.
 
 The `#ops-alerts` contract is owned by `infra-platform` and is delivered through Grafana alerts and Air-bot. This repository should treat it as an external runtime-alerting integration and should not open coordination messages there directly.
 
+### `#management`
+
+Use for:
+
+- introducing newly created WNT MRL repositories
+- sharing management-visible repository facts
+- surfacing context that management may classify, record, ignore, or follow up on at its own boundary
+
+This channel is informational. Messages sent here must not instruct management
+to classify, record, or take a specific action unless a separate management
+workflow explicitly requested that action.
+
 ## Relationship To Repository Issues
 
 - findings belong in `#coordination` (`1502714561923383296`)
 - campaigns belong in `#coordination` (`1502714561923383296`)
 - blockers belong in `#blockers` (`1502715067186024628`)
 - runtime incidents belong in `#ops-alerts` through the infra-platform alerting contract, not through local repo workflows
+- new repository introductions belong in `#management` (`1509567107891986644`)
 
 ## Discord Anchors
 
