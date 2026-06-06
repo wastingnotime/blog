@@ -8,6 +8,7 @@ description: Decommission a repository by retiring it in the management ledgers,
 This repository owns the decommissioning workflow so repository retirement stays explicit and auditable.
 
 Use this skill when a repository should stop being treated as active work and needs a clean retirement path in the management ledger.
+If the repository owns an exported runtime surface, the retirement also has to remove or retire that live surface, not only the catalog entry that points at it.
 
 ## When to use
 
@@ -34,11 +35,14 @@ If the change spans more than one repository, use the campaign-management protoc
    - `docs/event-log.md`
    - `docs/mrl-managed-repository-contracts.md` when the repo signed a managed contract
    - `references/decommission-checklist.md` for the exact execution checklist
+   - the relevant runtime contract or slice doc when the repository owns a live deployment surface
 3. Update the ledgers first.
    - Move the repo into `decommissioning` or `decommissioned` in `docs/pipeline.md` if it belongs there.
    - Add or update the repo in `docs/sleepy-projects.md` when it is intentionally hidden from the main view.
    - Update `references/github-architecture.md` when visibility, naming, or archive status changes.
    - Record the retirement in `docs/event-log.md` if it is a durable management event.
+   - If the repository owns a live service, delete or retire the stack/workflow contract that keeps it deployable before calling the retirement complete.
+   - For Swarm-hosted services, a deleted stack file on `main` must result in `docker stack rm <stack>` through the repository's stack-removal protocol.
 4. Preserve the right amount of context.
    - Keep a replaced repository as a reference if it still teaches something.
    - Remove it from active views when it no longer belongs in the main pipeline.
@@ -51,8 +55,9 @@ If the change spans more than one repository, use the campaign-management protoc
    - The active pipeline no longer treats the repo as live work.
    - The sleep/archive ledgers reflect the new status.
    - Any managed-contract or campaign records are consistent.
+   - Any retired runtime surface is gone from the cluster or deployment target and no longer redeploys from the repository.
+   - If the repository previously owned a Swarm stack, confirm the stack is absent rather than only deprecated in documentation.
 
 ## Reference
 
 Read [`references/decommission-checklist.md`](../../references/decommission-checklist.md) when you need the exact execution order or a concise retirement checklist.
-
