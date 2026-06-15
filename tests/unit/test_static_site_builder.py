@@ -4,6 +4,7 @@ from pathlib import Path
 from types import SimpleNamespace
 
 from src.app.domain.models.site_config import AnalyticsConfig, SiteConfig
+from src.app.infrastructure.builders import static_site_builder
 from src.app.infrastructure.builders.static_site_builder import StaticSiteBuilder
 
 
@@ -37,12 +38,12 @@ def test_static_site_builder_reloads_the_site_module_before_building(
         return module
 
     monkeypatch.setattr(
-        "src.app.infrastructure.builders.static_site_builder.importlib.import_module",
-        fake_import_module,
-    )
-    monkeypatch.setattr(
-        "src.app.infrastructure.builders.static_site_builder.importlib.reload",
-        fake_reload,
+        static_site_builder,
+        "importlib",
+        SimpleNamespace(
+            import_module=fake_import_module,
+            reload=fake_reload,
+        ),
     )
 
     builder = StaticSiteBuilder(
