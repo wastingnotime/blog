@@ -7,77 +7,9 @@ on:
 
 permissions:
   contents: read
+  issues: read
 
 jobs:
   notify:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Classify issue
-        id: classify
-        uses: actions/github-script@v9
-        with:
-          script: |
-            const labels = (context.payload.issue.labels || []).map((label) => label.name.toLowerCase());
-            const body = (context.payload.issue.body || '').toLowerCase();
-            const issue = context.payload.issue;
-            const repo = context.repo;
-            const matchesCampaign = labels.includes('campaign') || body.includes('campaign_issue_template.md') || body.includes('/campaigns/');
-            const matchesFinding = labels.includes('finding') || body.includes('finding_issue_template.md') || body.includes('work/findings/');
-
-            if (!matchesCampaign && !matchesFinding) {
-              core.setOutput('should_notify', 'false');
-              return;
-            }
-
-            const kind = matchesCampaign ? 'campaign' : 'finding';
-            const channelId = matchesCampaign ? '1502714561923383296' : '1502715067186024628';
-            const verb = kind === 'campaign' ? 'started' : 'opened';
-            const message = `${kind} ${verb}: ${repo.owner}/${repo.repo}#${issue.number} ${issue.title} ${issue.html_url}`;
-
-            core.setOutput('should_notify', 'true');
-            core.setOutput('kind', kind);
-            core.setOutput('channel_id', channelId);
-            core.setOutput('message', message);
-
-      - name: Send Discord notification
-        if: steps.classify.outputs.should_notify == 'true'
-        env:
-          DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
-          DISCORD_CHANNEL_ID: ${{ steps.classify.outputs.channel_id }}
-          DISCORD_MESSAGE: ${{ steps.classify.outputs.message }}
-        run: |
-          python3 - <<'PY'
-          import json
-          import os
-          import sys
-          import urllib.error
-          import urllib.request
-
-          token = os.environ.get('DISCORD_BOT_TOKEN', '')
-          if not token:
-              print('::warning::DISCORD_BOT_TOKEN secret is missing; skipping issue-open notification.')
-              sys.exit(0)
-
-          url = f"https://discord.com/api/v10/channels/{os.environ['DISCORD_CHANNEL_ID']}/messages"
-          data = json.dumps({'content': os.environ['DISCORD_MESSAGE']}).encode()
-          request = urllib.request.Request(
-              url,
-              data=data,
-              headers={
-                  'Authorization': f'Bot {token}',
-                  'Content-Type': 'application/json',
-                  'User-Agent': 'python-requests/2.32.3',
-                  'Accept': '*/*',
-              },
-              method='POST',
-          )
-          try:
-              with urllib.request.urlopen(request) as response:
-                  response.read()
-          except urllib.error.HTTPError as exc:
-              print(f"::warning::Discord notification returned HTTP {exc.code}; skipping issue-open notification.")
-              sys.exit(0)
-          except Exception as exc:
-              print(f"::warning::Discord notification failed: {exc}; skipping issue-open notification.")
-              sys.exit(0)
-          PY
+    uses: wastingnotime/wnt-tools/.github/workflows/notify-discord-on-issue-open.yml@main
+    secrets: inherit
