@@ -22,7 +22,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: checkout repository
-        uses: actions/checkout@v6.0.3
+        uses: actions/checkout@v7
 
       - name: lint workflows
         uses: reviewdog/action-actionlint@v1.72.0
